@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline'
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline' | 'cancel'
   size?: 'sm' | 'md' | 'lg'
   isLoading?: boolean
   icon?: React.ReactNode
@@ -34,12 +34,19 @@ export function Button({
     danger: 'bg-danger-500 hover:bg-danger-700 text-white focus:ring-danger-500 shadow-sm',
     ghost: 'hover:bg-slate-100 text-slate-700 focus:ring-slate-200',
     outline: 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 focus:ring-slate-200 shadow-sm',
+    cancel: 'bg-danger-50 hover:bg-danger-100/80 text-danger-700 border-2 border-danger-500 focus:ring-danger-500 shadow-xs',
   }
   
   const sizes = {
     sm: 'px-3 py-1.5 text-xs',
     md: 'px-4 py-2.5 text-sm',
     lg: 'px-6 py-3 text-base',
+  }
+
+  // Auto-resolve any button containing "Cancel" to the cancel variant style
+  let resolvedVariant = variant
+  if (typeof children === 'string' && children.trim().toLowerCase() === 'cancel') {
+    resolvedVariant = 'cancel'
   }
 
   // Auto-detect and render default icon if none is provided and children is a plain string
@@ -70,7 +77,7 @@ export function Button({
 
   return (
     <button
-      className={`${baseStyle} ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`${baseStyle} ${variants[resolvedVariant]} ${sizes[size]} ${className}`}
       disabled={disabled || isLoading}
       {...props}
     >

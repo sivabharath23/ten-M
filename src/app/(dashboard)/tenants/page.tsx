@@ -194,21 +194,19 @@ export default function TenantsPage() {
       <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl w-fit">
         <button
           onClick={() => setFilterStatus('ACTIVE')}
-          className={`px-4 py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer ${
-            filterStatus === 'ACTIVE' 
-              ? 'bg-white text-slate-900 shadow-sm' 
-              : 'text-slate-500 hover:text-slate-800'
-          }`}
+          className={`px-4 py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer ${filterStatus === 'ACTIVE'
+            ? 'bg-white text-slate-900 shadow-sm'
+            : 'text-slate-500 hover:text-slate-800'
+            }`}
         >
           Active Tenants
         </button>
         <button
           onClick={() => setFilterStatus('VACATED')}
-          className={`px-4 py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer ${
-            filterStatus === 'VACATED' 
-              ? 'bg-white text-slate-900 shadow-sm' 
-              : 'text-slate-500 hover:text-slate-800'
-          }`}
+          className={`px-4 py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer ${filterStatus === 'VACATED'
+            ? 'bg-white text-slate-900 shadow-sm'
+            : 'text-slate-500 hover:text-slate-800'
+            }`}
         >
           Vacated Archive
         </button>
@@ -271,7 +269,7 @@ export default function TenantsPage() {
                     <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider block">Current Rent</span>
                     <span className="font-black text-slate-800 text-base">₹{tenant.currentRent.toLocaleString()}/mo</span>
                   </div>
-                  
+
                   <Link href={`/tenants/${tenant.id}`}>
                     <Button variant="outline" size="sm" className="text-xs font-bold px-3">
                       View Ledger
@@ -291,7 +289,7 @@ export default function TenantsPage() {
         title="Register New Tenant"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <Select
               id="property"
               label="Select Building"
@@ -320,7 +318,7 @@ export default function TenantsPage() {
             {...register('name')}
           />
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <Input
               id="phone"
               label="Phone Number"
@@ -339,7 +337,7 @@ export default function TenantsPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <Select
               id="idProofType"
               label="ID Proof Type"
@@ -362,7 +360,7 @@ export default function TenantsPage() {
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <Input
               id="joiningDate"
               type="date"
