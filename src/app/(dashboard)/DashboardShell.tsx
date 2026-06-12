@@ -7,13 +7,13 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { Topbar } from '@/components/layout/Topbar'
 import { MobileNav } from '@/components/layout/MobileNav'
 import { toast } from 'sonner'
-import { 
-  DoorOpen, 
-  Droplets, 
-  Wallet, 
-  TrendingUp, 
-  FileBarChart, 
-  Settings, 
+import {
+  DoorOpen,
+  Droplets,
+  Wallet,
+  TrendingUp,
+  FileBarChart,
+  Settings,
   LogOut,
   X,
   User
@@ -57,7 +57,7 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
     try {
       const response = await fetch('/api/auth/logout', { method: 'POST' })
       if (!response.ok) throw new Error('Logout failed')
-      
+
       toast.success('Signed out successfully')
       router.push('/login')
       router.refresh()
@@ -86,10 +86,10 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
       {/* Desktop Sidebar */}
-      <Sidebar 
-        user={user} 
-        isCollapsed={isSidebarCollapsed} 
-        onToggle={handleToggleSidebar} 
+      <Sidebar
+        user={user}
+        isCollapsed={isSidebarCollapsed}
+        onToggle={handleToggleSidebar}
       />
 
       {/* Main Container */}
@@ -98,7 +98,7 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
         <Topbar user={user} title={getPageTitle()} />
 
         {/* Scrollable Content Pane */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">
+        <main className="flex-1 overflow-y-auto p-3 md:p-4 pb-20 md:pb-6">
           <div className="max-w-6xl mx-auto space-y-6 animate-page-transition-enter">
             {children}
           </div>
@@ -112,7 +112,7 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
       {isMoreOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex items-end">
           {/* Backdrop overlay */}
-          <div 
+          <div
             className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
             onClick={() => setIsMoreOpen(false)}
           />
@@ -133,7 +133,7 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
                   <span className="text-[9px] text-slate-400 font-bold uppercase">{user?.userType === 'SINGLE' ? 'Single Landlord' : 'Multi-Property'}</span>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setIsMoreOpen(false)}
                 className="p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 cursor-pointer"
               >
@@ -151,11 +151,10 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
                     key={link.href}
                     href={link.href}
                     onClick={() => setIsMoreOpen(false)}
-                    className={`flex flex-col items-center justify-center p-4 border rounded-xl gap-2 transition-all ${
-                      isActive
+                    className={`flex flex-col items-center justify-center p-4 border rounded-xl gap-2 transition-all ${isActive
                         ? 'bg-brand-50 border-brand-200 text-brand-700 font-bold'
                         : 'bg-slate-50 border-slate-100 text-slate-600 hover:bg-slate-100/50'
-                    }`}
+                      }`}
                   >
                     <Icon className="h-5 w-5 stroke-2" />
                     <span className="text-xs font-bold tracking-tight text-center">{link.label}</span>

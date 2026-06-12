@@ -1,10 +1,19 @@
 import React from 'react'
 import { Spinner } from './Spinner'
+import { 
+  X, 
+  Save, 
+  Plus, 
+  ArrowLeft, 
+  Trash2,
+  Check
+} from 'lucide-react'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline'
   size?: 'sm' | 'md' | 'lg'
   isLoading?: boolean
+  icon?: React.ReactNode
 }
 
 export function Button({
@@ -14,6 +23,7 @@ export function Button({
   size = 'md',
   isLoading = false,
   disabled,
+  icon,
   ...props
 }: ButtonProps) {
   const baseStyle = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-100 focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.97] active:opacity-90 disabled:opacity-50 disabled:pointer-events-none cursor-pointer'
@@ -31,14 +41,44 @@ export function Button({
     md: 'px-4 py-2.5 text-sm',
     lg: 'px-6 py-3 text-base',
   }
-  
+
+  // Auto-detect and render default icon if none is provided and children is a plain string
+  let autoIcon = icon
+  if (!isLoading && !autoIcon && typeof children === 'string') {
+    const text = children.trim().toLowerCase()
+    if (text === 'cancel' || text === 'close') {
+      autoIcon = <X className="h-3.5 w-3.5 shrink-0" />
+    } else if (text.includes('save') || text.includes('update') || text.includes('apply')) {
+      autoIcon = <Save className="h-3.5 w-3.5 shrink-0" />
+    } else if (text.includes('create') || text.includes('register') || text.includes('add') || text.includes('submit')) {
+      autoIcon = <Plus className="h-3.5 w-3.5 shrink-0" />
+    } else if (text.includes('back')) {
+      autoIcon = <ArrowLeft className="h-3.5 w-3.5 shrink-0" />
+    } else if (text.includes('delete') || text.includes('archive') || text.includes('vacate')) {
+      autoIcon = <Trash2 className="h-3.5 w-3.5 shrink-0" />
+    } else if (text.includes('confirm') || text.includes('sign in') || text.includes('log in') || text.includes('sign out') || text.includes('log out')) {
+      autoIcon = <Check className="h-3.5 w-3.5 shrink-0" />
+    }
+  }
+
+  // Render the icon wrapper if an icon exists
+  const renderedIcon = autoIcon ? (
+    <span className="mr-1.5 flex items-center justify-center shrink-0">
+      {autoIcon}
+    </span>
+  ) : null
+
   return (
     <button
       className={`${baseStyle} ${variants[variant]} ${sizes[size]} ${className}`}
       disabled={disabled || isLoading}
       {...props}
     >
-      {isLoading && <Spinner className="mr-2 h-4 w-4 text-current" />}
+      {isLoading ? (
+        <Spinner className="mr-2 h-4 w-4 text-current" />
+      ) : (
+        renderedIcon
+      )}
       {children}
     </button>
   )
