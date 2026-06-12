@@ -14,24 +14,10 @@ interface UserSession {
 interface TopbarProps {
   user: UserSession | null
   title?: string
+  onLogoutRequest: () => void
 }
 
-export function Topbar({ user, title = 'TenM' }: TopbarProps) {
-  const router = useRouter()
-
-  const handleLogout = async () => {
-    try {
-      const response = await fetch('/api/auth/logout', { method: 'POST' })
-      if (!response.ok) throw new Error('Logout failed')
-
-      toast.success('Signed out successfully')
-      router.push('/login')
-      router.refresh()
-    } catch {
-      toast.error('Failed to log out')
-    }
-  }
-
+export function Topbar({ user, title = 'TenM', onLogoutRequest }: TopbarProps) {
   return (
     <header className="h-16 border-b border-slate-200 bg-white px-4 md:px-6 flex items-center justify-between sticky top-0 z-30">
       <div className="flex items-center gap-3">
@@ -52,7 +38,7 @@ export function Topbar({ user, title = 'TenM' }: TopbarProps) {
 
             {/* Mobile Logout trigger */}
             <button
-              onClick={handleLogout}
+              onClick={onLogoutRequest}
               className="md:hidden p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-150 transition-colors cursor-pointer"
               title="Logout"
             >

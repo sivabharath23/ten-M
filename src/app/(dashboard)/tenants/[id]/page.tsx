@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Badge } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -575,29 +576,17 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
       </div>
 
       {/* Vacate Confirmation Modal */}
-      <Modal
+      <ConfirmModal
         isOpen={isVacateModalOpen}
         onClose={() => setIsVacateModalOpen(false)}
+        onConfirm={handleVacate}
         title="Vacate Tenant Profile"
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-slate-600 leading-relaxed font-semibold">
-            Are you sure you want to mark <span className="font-extrabold text-slate-800">{tenant.name}</span> as vacated?
-          </p>
-          <div className="bg-rose-50 border border-rose-100 p-3.5 rounded-xl flex items-start gap-2.5 text-xs text-rose-700 font-semibold">
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-            <p>This action will release flat <span className="font-bold">Unit {tenant.flat.flatNumber}</span> to status VACANT, allowing a new tenant to be assigned to it.</p>
-          </div>
-          <div className="flex justify-end gap-3 pt-2">
-            <Button variant="ghost" onClick={() => setIsVacateModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="danger" onClick={handleVacate} isLoading={isSubmitting}>
-              Confirm Vacate
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        message={`Are you sure you want to mark ${tenant.name} as vacated? This will release flat Unit ${tenant.flat.flatNumber} to status VACANT.`}
+        confirmText="Confirm Vacate"
+        cancelText="Cancel"
+        type="danger"
+        isLoading={isSubmitting}
+      />
 
       {/* Advance Entry Modal */}
       <Modal

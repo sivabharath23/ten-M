@@ -30,9 +30,10 @@ interface SidebarProps {
   user: UserSession | null
   isCollapsed: boolean
   onToggle: () => void
+  onLogoutRequest: () => void
 }
 
-export function Sidebar({ user, isCollapsed, onToggle }: SidebarProps) {
+export function Sidebar({ user, isCollapsed, onToggle, onLogoutRequest }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -50,19 +51,6 @@ export function Sidebar({ user, isCollapsed, onToggle }: SidebarProps) {
     { label: 'Reports', href: '/reports', icon: FileBarChart, category: 'Management' },
     { label: 'Settings', href: '/settings', icon: Settings, category: 'Management' },
   ]
-
-  const handleLogout = async () => {
-    try {
-      const response = await fetch('/api/auth/logout', { method: 'POST' })
-      if (!response.ok) throw new Error('Logout failed')
-      
-      toast.success('Signed out successfully')
-      router.push('/login')
-      router.refresh()
-    } catch {
-      toast.error('Failed to log out')
-    }
-  }
 
   // Group items by category
   const categories = ['Main', 'Finances', 'Management']
@@ -157,7 +145,7 @@ export function Sidebar({ user, isCollapsed, onToggle }: SidebarProps) {
             )}
           </div>
           <button
-            onClick={handleLogout}
+            onClick={onLogoutRequest}
             title={isCollapsed ? "Sign Out" : undefined}
             className={`flex items-center justify-center bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-800 text-xs font-bold border border-slate-200 rounded-xl transition-all cursor-pointer ${
               isCollapsed ? 'p-2.5 w-10 h-10' : 'gap-2 w-full py-2'

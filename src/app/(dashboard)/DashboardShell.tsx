@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Topbar } from '@/components/layout/Topbar'
 import { MobileNav } from '@/components/layout/MobileNav'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { toast } from 'sonner'
 import {
   DoorOpen,
@@ -33,6 +34,11 @@ interface DashboardShellProps {
 export function DashboardShell({ children, user }: DashboardShellProps) {
   const [isMoreOpen, setIsMoreOpen] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  
+  // State for logout confirmation popup
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
   const pathname = usePathname()
   const router = useRouter()
 
@@ -53,7 +59,7 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
   }
 
   const handleLogout = async () => {
-    setIsMoreOpen(false)
+    setIsLoggingOut(true)
     try {
       const response = await fetch('/api/auth/logout', { method: 'POST' })
       if (!response.ok) throw new Error('Logout failed')
@@ -63,6 +69,8 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
       router.refresh()
     } catch {
       toast.error('Failed to log out')
+      setIsLoggingOut(false)
+      setIsLogoutConfirmOpen(false)
     }
   }
 
@@ -90,12 +98,17 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
         user={user}
         isCollapsed={isSidebarCollapsed}
         onToggle={handleToggleSidebar}
+        onLogoutRequest={() => setIsLogoutConfirmOpen(true)}
       />
 
       {/* Main Container */}
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         {/* Top Header */}
-        <Topbar user={user} title={getPageTitle()} />
+        <Topbar 
+          user={user} 
+          title={getPageTitle()} 
+          onLogoutRequest={() => setIsLogoutConfirmOpen(true)}
+        />
 
         {/* Scrollable Content Pane */}
         <main className="flex-1 overflow-y-auto p-3 md:p-4 pb-20 md:pb-6">
@@ -166,7 +179,10 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
             {/* Logout Footer */}
             <div className="p-4 border-t border-slate-100 bg-slate-50/50">
               <button
-                onClick={handleLogout}
+                onClick={() => {
+                  setIsMoreOpen(false)
+                  setIsLogoutConfirmOpen(true)
+                }}
                 className="flex items-center justify-center gap-2 w-full py-3 bg-white text-danger-700 font-bold border border-slate-200 rounded-xl hover:bg-rose-50 transition-colors cursor-pointer"
               >
                 <LogOut className="h-4.5 w-4.5" />
@@ -176,6 +192,19 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
           </div>
         </div>
       )}
+
+      {/* Logout Confirmation Dialog */}
+      <ConfirmModal
+        isOpen={isLogoutConfirmOpen}
+        onClose={() => setIsLogoutConfirmOpen(false)}
+        onConfirm={handleLogout}
+        title="Sign Out"
+        message="Are you sure you want to sign out of your account?"
+        confirmText="Sign Out"
+        cancelText="Cancel"
+        type="danger"
+        isLoading={isLoggingOut}
+      />
     </div>
   )
 }
