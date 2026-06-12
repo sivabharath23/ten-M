@@ -14,9 +14,11 @@ function createPrismaClient() {
   const schemaName = schemaMatch ? schemaMatch[1] : 'public'
 
   const isProduction = process.env.NODE_ENV === 'production'
+  const isPooler = dbUrl.includes('-pooler') || dbUrl.includes('neon.tech')
+
   const pool = new Pool({ 
     connectionString: dbUrl,
-    options: `-c search_path=${schemaName}`,
+    options: isPooler ? undefined : `-c search_path=${schemaName}`,
     ssl: isProduction || dbUrl.includes('sslmode=') ? { rejectUnauthorized: false } : undefined
   })
   const adapter = new PrismaPg(pool, { schema: schemaName })
