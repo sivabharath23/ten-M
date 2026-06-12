@@ -62,7 +62,7 @@ export function Sidebar({ user, isCollapsed, onToggle, onLogoutRequest }: Sideba
       {/* Collapse Toggle Button */}
       <button
         onClick={onToggle}
-        className="hidden md:flex absolute top-4.5 -right-3.5 z-50 items-center justify-center h-7 w-7 rounded-full border border-slate-200 bg-white text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-all shadow-md cursor-pointer"
+        className="hidden md:flex absolute top-[18px] -right-[14px] z-50 items-center justify-center h-7 w-7 rounded-full border border-slate-200 bg-white text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-all shadow-md cursor-pointer"
         aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         {isCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}

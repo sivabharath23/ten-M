@@ -196,11 +196,11 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
             onAction={handleOpenAddModal}
           />
         ) : (
-          <div className="bg-white border border-slate-150 rounded-2xl overflow-hidden shadow-xs">
+          <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs md:text-sm">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-150 text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                  <tr className="bg-slate-50/75 border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                     <th className="px-5 py-3.5">Flat No.</th>
                     <th className="px-5 py-3.5">Floor</th>
                     <th className="px-5 py-3.5">BHK / Type</th>
@@ -293,7 +293,7 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
               { label: 'Commercial Retail Shop', value: 'Shop' },
             ]}
             error={errors.bhkType?.message}
-            onChange={(e) => setValue('bhkType', e.target.value)}
+            {...register('bhkType')}
           />
 
           <Input

@@ -39,7 +39,7 @@ export function Topbar({ user, title = 'TenM', onLogoutRequest }: TopbarProps) {
             {/* Mobile Logout trigger */}
             <button
               onClick={onLogoutRequest}
-              className="md:hidden p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-150 transition-colors cursor-pointer"
+              className="md:hidden p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
               title="Logout"
             >
               <LogOut className="h-4.5 w-4.5" />

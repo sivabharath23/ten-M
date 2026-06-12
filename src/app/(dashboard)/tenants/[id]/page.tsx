@@ -420,7 +420,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs md:text-sm">
                       <thead>
-                        <tr className="border-b border-slate-150 text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                        <tr className="border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                           <th className="pb-2">Billing Month</th>
                           <th className="pb-2">Rent Due</th>
                           <th className="pb-2">Paid Amount</th>
@@ -503,7 +503,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs md:text-sm">
                       <thead>
-                        <tr className="border-b border-slate-150 text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                        <tr className="border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                           <th className="pb-2">Month</th>
                           <th className="pb-2">Usage (L)</th>
                           <th className="pb-2">Rate (₹/L)</th>

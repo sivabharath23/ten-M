@@ -215,7 +215,7 @@ export default function AdvanceHistoryPage() {
                 {records.map((rec) => (
                   <div key={rec.id} className="relative flex flex-col bg-white border border-slate-100/80 rounded-xl p-4 shadow-2xs gap-1">
                     {/* Timeline bullet */}
-                    <div className={`absolute -left-[31px] top-4.5 h-3.5 w-3.5 rounded-full border-2 border-white ring-4 ring-slate-100 ${
+                    <div className={`absolute -left-[31px] top-[18px] h-3.5 w-3.5 rounded-full border-2 border-white ring-4 ring-slate-100 ${
                       rec.type === 'RECEIVED' ? 'bg-emerald-500' :
                       rec.type === 'DEDUCTED' ? 'bg-rose-500' :
                       'bg-blue-500'

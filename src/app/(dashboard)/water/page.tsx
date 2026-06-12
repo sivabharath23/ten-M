@@ -267,11 +267,11 @@ export default function WaterBillingPage() {
           onAction={handleOpenAddModal}
         />
       ) : (
-        <div className="bg-white border border-slate-150 rounded-2xl overflow-hidden shadow-xs">
+        <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs md:text-sm">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-150 text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                <tr className="bg-slate-50/75 border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   <th className="px-5 py-3.5">Flat No.</th>
                   <th className="px-5 py-3.5">Tenant Name</th>
                   <th className="px-5 py-3.5">Building</th>
@@ -338,7 +338,7 @@ export default function WaterBillingPage() {
               label="Select Occupied Flat"
               options={flats.map(f => ({ label: `Flat ${f.flatNumber} (${f.tenants[0]?.name || 'Unknown'})`, value: f.id }))}
               error={errors.flatId?.message}
-              onChange={(e) => setValue('flatId', e.target.value)}
+              {...register('flatId')}
               disabled={!modalPropertyId || flats.length === 0}
               placeholder={modalPropertyId ? (flats.length === 0 ? 'No occupied flats' : 'Select Flat') : 'Select Property first'}
             />
@@ -350,7 +350,7 @@ export default function WaterBillingPage() {
               label="Month"
               options={MONTHS_LIST}
               error={errors.month?.message}
-              onChange={(e) => setValue('month', parseInt(e.target.value))}
+              {...register('month', { valueAsNumber: true })}
               defaultValue={selectedMonth}
             />
 
@@ -359,7 +359,7 @@ export default function WaterBillingPage() {
               label="Year"
               options={yearOptions}
               error={errors.year?.message}
-              onChange={(e) => setValue('year', parseInt(e.target.value))}
+              {...register('year', { valueAsNumber: true })}
               defaultValue={selectedYear}
             />
           </div>

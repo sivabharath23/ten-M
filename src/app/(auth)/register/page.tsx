@@ -121,7 +121,7 @@ export default function RegisterPage() {
               { label: 'Multiple Properties (e.g. Agency or Estate Owner)', value: 'MULTIPLE' },
             ]}
             error={errors.userType?.message}
-            onChange={(e) => setValue('userType', e.target.value as 'SINGLE' | 'MULTIPLE')}
+            {...register('userType')}
           />
 
           <Button 

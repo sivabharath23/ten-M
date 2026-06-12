@@ -225,11 +225,11 @@ export default function ReportsPage() {
           <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
             Report Preview ({reportData.length} records)
           </span>
-          <div className="bg-white border border-slate-150 rounded-2xl overflow-hidden shadow-xs">
+          <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs md:text-sm">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-150 text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                  <tr className="bg-slate-50/75 border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                     {getTableHeaders().map((header, idx) => (
                       <th key={idx} className="px-5 py-3.5 whitespace-nowrap">{header}</th>
                     ))}

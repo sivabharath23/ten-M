@@ -281,7 +281,7 @@ export default function PropertiesPage() {
               { label: 'Commercial (Shops/Offices)', value: 'COMMERCIAL' },
             ]}
             error={errors.type?.message}
-            onChange={(e) => setValue('type', e.target.value as 'RESIDENTIAL' | 'COMMERCIAL')}
+            {...register('type')}
           />
 
           <div className="flex justify-end gap-3 pt-2">

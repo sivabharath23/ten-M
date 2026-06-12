@@ -306,7 +306,7 @@ export default function TenantsPage() {
               label="Select Flat Unit"
               options={flats.map(f => ({ label: `Flat ${f.flatNumber} (₹${f.baseRent})`, value: f.id }))}
               error={errors.flatId?.message}
-              onChange={(e) => setValue('flatId', e.target.value)}
+              {...register('flatId')}
               disabled={!selectedPropertyId || flats.length === 0}
               placeholder={selectedPropertyId ? (flats.length === 0 ? 'No vacant flats' : 'Select Flat') : 'Select Property first'}
             />
@@ -350,7 +350,7 @@ export default function TenantsPage() {
                 { label: 'Driving License', value: 'License' },
               ]}
               error={errors.idProofType?.message}
-              onChange={(e) => setValue('idProofType', e.target.value)}
+              {...register('idProofType')}
             />
 
             <Input
