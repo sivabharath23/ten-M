@@ -33,6 +33,7 @@ export function ConfirmModal({
       isOpen={isOpen}
       onClose={onClose}
       title={title}
+      icon={null}
       footer={
         <>
           <Button
