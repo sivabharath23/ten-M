@@ -20,6 +20,9 @@
   --color-danger-700: #dc2626;
 
   --color-surface: #f9fafb;
+
+  --animate-spin-slow: spin 25s linear infinite;
+  --animate-pulse-slow: pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 /* Custom modern scrollbar styling for webkit */
