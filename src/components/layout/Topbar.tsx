@@ -23,7 +23,7 @@ export function Topbar({ user, title = 'TenM' }: TopbarProps) {
     try {
       const response = await fetch('/api/auth/logout', { method: 'POST' })
       if (!response.ok) throw new Error('Logout failed')
-      
+
       toast.success('Signed out successfully')
       router.push('/login')
       router.refresh()
@@ -49,7 +49,7 @@ export function Topbar({ user, title = 'TenM' }: TopbarProps) {
               <span className="text-xs font-black text-slate-800 leading-tight">{user.name}</span>
               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{user.userType === 'SINGLE' ? 'Single Landlord' : 'Multi-Property'}</span>
             </div>
-            
+
             {/* Mobile Logout trigger */}
             <button
               onClick={handleLogout}

@@ -16,8 +16,8 @@ import {
   FileBarChart, 
   Settings, 
   LogOut,
-  ChevronLeft,
-  ChevronRight
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react'
 
 interface UserSession {
@@ -77,7 +77,7 @@ export function Sidebar({ user, isCollapsed, onToggle }: SidebarProps) {
         className="hidden md:flex absolute top-4.5 -right-3.5 z-50 items-center justify-center h-7 w-7 rounded-full border border-slate-200 bg-white text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-all shadow-md cursor-pointer"
         aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
-        {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        {isCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
       </button>
 
       {/* Brand Header */}

@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Badge } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { toast } from 'sonner'
@@ -36,6 +37,10 @@ export default function PropertiesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [editingProperty, setEditingProperty] = useState<Property | null>(null)
+  
+  // Custom confirmation modal states for archiving properties
+  const [archiveId, setArchiveId] = useState<string | null>(null)
+  const [isArchiving, setIsArchiving] = useState(false)
 
   const {
     register,
@@ -115,15 +120,23 @@ export default function PropertiesPage() {
     }
   }
 
-  const handleArchive = async (id: string) => {
-    if (!confirm('Are you sure you want to archive this property?')) return
+  const handleArchiveClick = (id: string) => {
+    setArchiveId(id)
+  }
+
+  const handleConfirmArchive = async () => {
+    if (!archiveId) return
+    setIsArchiving(true)
     try {
-      const response = await fetch(`/api/properties/${id}`, { method: 'DELETE' })
+      const response = await fetch(`/api/properties/${archiveId}`, { method: 'DELETE' })
       if (!response.ok) throw new Error('Archive failed')
       toast.success('Property archived successfully')
+      setArchiveId(null)
       fetchProperties()
     } catch {
       toast.error('Failed to archive property')
+    } finally {
+      setIsArchiving(false)
     }
   }
 
@@ -217,7 +230,7 @@ export default function PropertiesPage() {
                     variant="ghost" 
                     size="sm" 
                     className="p-2 h-auto text-rose-500 hover:bg-rose-50"
-                    onClick={() => handleArchive(prop.id)}
+                    onClick={() => handleArchiveClick(prop.id)}
                     title="Archive"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -281,6 +294,19 @@ export default function PropertiesPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Archive Property Confirmation Popup */}
+      <ConfirmModal
+        isOpen={archiveId !== null}
+        onClose={() => setArchiveId(null)}
+        onConfirm={handleConfirmArchive}
+        title="Archive Property"
+        message="Are you sure you want to archive this property? All associated flats and active tenants will be preserved but hidden."
+        confirmText="Archive"
+        cancelText="Cancel"
+        type="danger"
+        isLoading={isArchiving}
+      />
     </div>
   )
 }
