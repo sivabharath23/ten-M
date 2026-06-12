@@ -146,16 +146,9 @@ export default function RegisterPage() {
       </div>
 
       {/* Right Column: Dynamic Form (centered on mobile, split on desktop) */}
-      <div className="w-full lg:w-[55%] bg-slate-50 flex items-center justify-center p-6 md:p-12 relative overflow-hidden">
-        {/* Soft Grid Background on Light Side */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30" />
-        
-        {/* Glow Spheres */}
-        <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-brand-500/5 blur-3xl -z-10" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-indigo-500/5 blur-3xl -z-10" />
-
+      <div className="flex-1 flex items-center justify-center p-6 md:p-12 relative">
         {/* Floating Form Card */}
-        <div className="w-full max-w-md bg-white border border-slate-100/80 shadow-[0_20px_50px_rgba(15,23,42,0.06)] rounded-3xl p-8 md:p-10 space-y-8 relative z-10 transition-all duration-300">
+        <div className="w-full max-w-md bg-slate-900/40 backdrop-blur-2xl border border-white/[0.06] rounded-[32px] p-8 md:p-10 space-y-8 shadow-[0_32px_64px_rgba(0,0,0,0.5)] relative z-10 transition-all duration-300">
           
           {/* Header */}
           <div className="space-y-2 text-center lg:text-left">
@@ -163,10 +156,10 @@ export default function RegisterPage() {
             <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 mx-auto lg:mx-0 lg:hidden mb-4">
               <Building2 className="h-5 w-5" />
             </div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-2xl font-black text-white tracking-tight">
               Register Owner/Admin
             </h1>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">
               Tenant Management Portal
             </p>
           </div>
@@ -178,6 +171,7 @@ export default function RegisterPage() {
               label="Full Name"
               placeholder="John Doe"
               error={errors.name?.message}
+              className="!bg-slate-950/60 !border-slate-800/80 !text-slate-100 focus:!border-brand-500 focus:!ring-brand-500/10 !placeholder-slate-600 !rounded-xl !py-3 !text-sm transition-all duration-300"
               {...register('name')}
             />
 
@@ -187,6 +181,7 @@ export default function RegisterPage() {
               label="Email Address"
               placeholder="john@example.com"
               error={errors.email?.message}
+              className="!bg-slate-950/60 !border-slate-800/80 !text-slate-100 focus:!border-brand-500 focus:!ring-brand-500/10 !placeholder-slate-600 !rounded-xl !py-3 !text-sm transition-all duration-300"
               {...register('email')}
             />
 
@@ -196,6 +191,7 @@ export default function RegisterPage() {
               label="Password"
               placeholder="Min. 8 characters"
               error={errors.password?.message}
+              className="!bg-slate-950/60 !border-slate-800/80 !text-slate-100 focus:!border-brand-500 focus:!ring-brand-500/10 !placeholder-slate-600 !rounded-xl !py-3 !text-sm transition-all duration-300"
               {...register('password')}
             />
 
@@ -207,12 +203,13 @@ export default function RegisterPage() {
                 { label: 'Multiple Properties (e.g. Agency or Estate Owner)', value: 'MULTIPLE' },
               ]}
               error={errors.userType?.message}
+              className="!bg-slate-950/60 !border-slate-800/80 !text-slate-100 focus:!border-brand-500 focus:!ring-brand-500/10 !rounded-xl !py-3 !text-sm transition-all duration-300"
               {...register('userType')}
             />
 
             <Button 
               type="submit" 
-              className="w-full py-3.5 text-xs font-extrabold uppercase tracking-widest bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 hover:shadow-lg hover:shadow-brand-500/20 active:scale-98 transition-all duration-200 rounded-2xl cursor-pointer mt-2" 
+              className="w-full py-4 text-xs font-extrabold uppercase tracking-widest bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 rounded-xl transition-all duration-300 active:scale-98 cursor-pointer mt-4 border-0" 
               isLoading={isLoading}
             >
               Register Account
@@ -220,16 +217,16 @@ export default function RegisterPage() {
           </form>
 
           {/* Redirection Link Card */}
-          <div className="text-center pt-5 border-t border-slate-100 mt-6">
-            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2.5">
+          <div className="text-center pt-6 border-t border-slate-800/80 mt-6">
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-3">
               Already have an account?
             </p>
             <Link 
               href="/login" 
-              className="inline-flex items-center gap-1.5 justify-center w-full px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs rounded-xl transition-all tracking-wide hover:scale-[1.01] active:scale-99"
+              className="inline-flex items-center gap-2 justify-center w-full px-4 py-3 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.05] text-slate-300 hover:text-white font-extrabold text-xs rounded-xl transition-all tracking-wide hover:scale-[1.01] active:scale-99"
             >
               <span>Sign In to Your Account</span>
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-3.5 w-3.5 text-brand-400" />
             </Link>
           </div>
         </div>

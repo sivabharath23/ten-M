@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { Building2, Receipt, Droplet, TrendingUp, Sparkles, ShieldCheck, ArrowRight } from 'lucide-react'
+import { Building2, Receipt, Droplet, TrendingUp, Sparkles, ShieldCheck, ArrowRight, Activity, Users } from 'lucide-react'
 
 type LoginFormInputs = typeof loginSchema._output
 
@@ -55,163 +55,174 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-slate-900 relative overflow-hidden">
-      {/* Left Column: Premium Application Showcase (visible on lg screens) */}
-      <div className="hidden lg:flex lg:w-[45%] bg-slate-950 text-white p-16 flex-col justify-between relative overflow-hidden border-r border-slate-900">
-        {/* Tech Grid Overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-15" />
+    <div className="min-h-screen flex bg-slate-950 font-sans text-slate-100 relative overflow-hidden">
+      {/* Dynamic Ambient Blur Blobs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-brand-600/10 blur-[120px] -z-10 animate-pulse duration-[8s]" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-500/10 blur-[140px] -z-10 animate-pulse duration-[12s]" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[350px] h-[350px] rounded-full bg-purple-500/5 blur-[100px] -z-10" />
+
+      {/* Background Grid Lines */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 -z-10" />
+
+      {/* Main Container */}
+      <div className="w-full flex flex-col lg:flex-row relative z-10">
         
-        {/* Soft Glowing Orbs */}
-        <div className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full bg-brand-500/10 blur-[120px] -z-10 animate-pulse duration-[10s]" />
-        <div className="absolute top-1/2 -right-40 w-[400px] h-[400px] rounded-full bg-indigo-500/10 blur-[100px] -z-10 animate-pulse duration-[15s]" />
-
-        {/* Brand Header */}
-        <div className="flex items-center gap-3 relative z-10">
-          <div className="h-11 w-11 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/25">
-            <Building2 className="h-5 w-5" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-lg font-black tracking-wider text-white">TenM</span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest -mt-1">Tenant Management</span>
-          </div>
-        </div>
-
-        {/* App Pitch & Features */}
-        <div className="space-y-12 my-auto relative z-10 max-w-lg">
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-500/10 border border-brand-500/25 rounded-full text-brand-400 text-xs font-bold tracking-wide">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>Next-Gen Operations Hub</span>
-            </div>
-            <h2 className="text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-slate-100 to-slate-400 leading-tight">
-              Simplified Property & Tenant Management
-            </h2>
-            <p className="text-slate-400 text-sm font-semibold leading-relaxed">
-              Automated workflows, utilities billing, and tenant appraisal revisions integrated into a single unified workspace.
-            </p>
-          </div>
-
-          <div className="space-y-5">
-            {/* Feature Item 1 */}
-            <div className="flex gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300">
-              <div className="h-10 w-10 shrink-0 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400">
-                <Receipt className="h-5 w-5" />
-              </div>
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold text-slate-200">Rent & Late Fee Tracking</h4>
-                <p className="text-xs text-slate-400 leading-relaxed font-semibold">Log monthly payments, record partial balances, and customize grace days.</p>
-              </div>
-            </div>
-
-            {/* Feature Item 2 */}
-            <div className="flex gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300">
-              <div className="h-10 w-10 shrink-0 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-                <Droplet className="h-5 w-5" />
-              </div>
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold text-slate-200">Water Consumption Billing</h4>
-                <p className="text-xs text-slate-400 leading-relaxed font-semibold">Record volumetric usage per flat and auto-calculate bills with set tariffs.</p>
-              </div>
-            </div>
-
-            {/* Feature Item 3 */}
-            <div className="flex gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300">
-              <div className="h-10 w-10 shrink-0 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                <TrendingUp className="h-5 w-5" />
-              </div>
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold text-slate-200">Rent Appraisal Engine</h4>
-                <p className="text-xs text-slate-400 leading-relaxed font-semibold">Automate annual lease increments seamlessly on tenant anniversaries.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Live System Stats Widget */}
-        <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/[0.06] rounded-2xl max-w-sm relative z-10 backdrop-blur-md">
+        {/* Left Side: Product Showcase (lg only) */}
+        <div className="hidden lg:flex w-[45%] p-16 flex-col justify-between relative overflow-hidden border-r border-slate-900/50">
+          {/* Logo Brand */}
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Average Occupancy</p>
-              <p className="text-sm font-extrabold text-slate-100">98.4% Across Properties</p>
-            </div>
-          </div>
-          <span className="text-[9px] font-black bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full">LIVE PREVIEW</span>
-        </div>
-      </div>
-
-      {/* Right Column: Dynamic Form (centered on mobile, split on desktop) */}
-      <div className="w-full lg:w-[55%] bg-slate-50 flex items-center justify-center p-6 md:p-12 relative overflow-hidden">
-        {/* Soft Grid Background on Light Side */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30" />
-        
-        {/* Glow Spheres */}
-        <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-brand-500/5 blur-3xl -z-10" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-indigo-500/5 blur-3xl -z-10" />
-
-        {/* Floating Form Card */}
-        <div className="w-full max-w-md bg-white border border-slate-100/80 shadow-[0_20px_50px_rgba(15,23,42,0.06)] rounded-3xl p-8 md:p-10 space-y-8 relative z-10 transition-all duration-300">
-          
-          {/* Header */}
-          <div className="space-y-2 text-center lg:text-left">
-            {/* Small Brand Logo for Mobile */}
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 mx-auto lg:mx-0 lg:hidden mb-4">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/25">
               <Building2 className="h-5 w-5" />
             </div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              Welcome Back
-            </h1>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">
-              Sign in to manage your real estate operations
-            </p>
+            <div className="flex flex-col">
+              <span className="text-lg font-black tracking-widest text-white leading-none">TenM</span>
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1">Tenant Management</span>
+            </div>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <Input
-              id="email"
-              type="email"
-              label="Email Address"
-              placeholder="you@example.com"
-              error={errors.email?.message}
-              {...register('email')}
-            />
+          {/* 3D Tilted Dashboard Showcase Preview */}
+          <div className="my-auto space-y-12">
+            <div className="space-y-4 max-w-md">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-500/10 border border-brand-500/20 rounded-full text-brand-400 text-xs font-bold tracking-wide">
+                <Sparkles className="h-3 w-3" />
+                <span>Next-Gen Real Estate Operations</span>
+              </div>
+              <h2 className="text-4xl font-extrabold tracking-tight text-white leading-tight">
+                Simplified Property & Tenant Management
+              </h2>
+              <p className="text-slate-400 text-sm font-semibold leading-relaxed">
+                Streamline rent schedules, log water consumption, and automate annual revisions in one unified workspace.
+              </p>
+            </div>
 
-            <Input
-              id="password"
-              type="password"
-              label="Password"
-              placeholder="••••••••"
-              error={errors.password?.message}
-              {...register('password')}
-            />
+            {/* Interactive Mock UI card */}
+            <div className="relative pl-6">
+              {/* Back Card Decoration */}
+              <div className="absolute top-2 left-8 w-[90%] h-full bg-white/[0.01] border border-white/[0.03] rounded-2xl -z-10" />
+              
+              {/* Main Floating Card */}
+              <div className="bg-slate-900/60 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 shadow-2xl shadow-black/40 max-w-sm transform rotate-y-6 -rotate-x-12 rotate-3 hover:rotate-0 hover:scale-[1.02] transition-all duration-700 ease-out select-none">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 bg-brand-500/10 border border-brand-500/20 rounded-lg text-brand-400">
+                      <Activity className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-200">Rent Ledger</h4>
+                      <p className="text-[10px] text-slate-400 font-semibold">Monthly overview</p>
+                    </div>
+                  </div>
+                  <span className="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    82.8% Collected
+                  </span>
+                </div>
 
-            <Button 
-              type="submit" 
-              className="w-full py-3.5 text-xs font-extrabold uppercase tracking-widest bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 hover:shadow-lg hover:shadow-brand-500/20 active:scale-98 transition-all duration-200 rounded-2xl cursor-pointer mt-2" 
-              isLoading={isLoading}
-            >
-              Sign In
-            </Button>
-          </form>
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <div className="h-2 w-full bg-slate-800/80 rounded-full overflow-hidden">
+                      <div className="h-full w-[82.8%] bg-gradient-to-r from-brand-500 to-indigo-500 rounded-full" />
+                    </div>
+                    <div className="flex justify-between text-[10px] font-bold text-slate-400">
+                      <span>₹4,82,000 / ₹5,80,000</span>
+                      <span className="text-brand-400">Target Reached</span>
+                    </div>
+                  </div>
 
-          {/* Redirection Link Card */}
-          <div className="text-center pt-5 border-t border-slate-100 mt-6">
-            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2.5">
-              New to the platform?
-            </p>
-            <Link 
-              href="/register" 
-              className="inline-flex items-center gap-1.5 justify-center w-full px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs rounded-xl transition-all tracking-wide hover:scale-[1.01] active:scale-99"
-            >
-              <span>Register Property Owner/Admin</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
+                  {/* Micro list */}
+                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-white/[0.05]">
+                    <div className="space-y-0.5">
+                      <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Active Units</span>
+                      <div className="flex items-center gap-1">
+                        <Users className="h-3.5 w-3.5 text-slate-400" />
+                        <span className="text-xs font-bold text-slate-200">124 Tenants</span>
+                      </div>
+                    </div>
+                    <div className="space-y-0.5">
+                      <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Water Tariffs</span>
+                      <div className="flex items-center gap-1">
+                        <Droplet className="h-3.5 w-3.5 text-indigo-400" />
+                        <span className="text-xs font-bold text-slate-200">0.05 / Litre</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer branding */}
+          <div className="text-slate-600 text-xs font-semibold uppercase tracking-wider">
+            © {new Date().getFullYear()} TenM Portal. All rights reserved.
+          </div>
+        </div>
+
+        {/* Right Side: Glassmorphic Auth Form */}
+        <div className="flex-1 flex items-center justify-center p-6 md:p-12 relative">
+          {/* Glass Form Card */}
+          <div className="w-full max-w-md bg-slate-900/40 backdrop-blur-2xl border border-white/[0.06] rounded-[32px] p-8 md:p-10 space-y-8 shadow-[0_32px_64px_rgba(0,0,0,0.5)] relative z-10 transition-all duration-300">
+            
+            {/* Logo and Titles */}
+            <div className="space-y-2 text-center lg:text-left">
+              {/* Brand Logo for Mobile */}
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 mx-auto lg:mx-0 lg:hidden mb-4">
+                <Building2 className="h-5 w-5" />
+              </div>
+              <h1 className="text-2xl font-black text-white tracking-tight">
+                Welcome Back
+              </h1>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                Sign in to manage your real estate operations
+              </p>
+            </div>
+
+            {/* Input fields with customized dark themes */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              <Input
+                id="email"
+                type="email"
+                label="Email Address"
+                placeholder="you@example.com"
+                error={errors.email?.message}
+                className="!bg-slate-950/60 !border-slate-800/80 !text-slate-100 focus:!border-brand-500 focus:!ring-brand-500/10 !placeholder-slate-600 !rounded-xl !py-3 !text-sm transition-all duration-300"
+                {...register('email')}
+              />
+
+              <Input
+                id="password"
+                type="password"
+                label="Password"
+                placeholder="••••••••"
+                error={errors.password?.message}
+                className="!bg-slate-950/60 !border-slate-800/80 !text-slate-100 focus:!border-brand-500 focus:!ring-brand-500/10 !placeholder-slate-600 !rounded-xl !py-3 !text-sm transition-all duration-300"
+                {...register('password')}
+              />
+
+              <Button 
+                type="submit" 
+                className="w-full py-4 text-xs font-extrabold uppercase tracking-widest bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 rounded-xl transition-all duration-300 active:scale-98 cursor-pointer mt-4 border-0" 
+                isLoading={isLoading}
+              >
+                Sign In
+              </Button>
+            </form>
+
+            {/* Premium Redirection Card */}
+            <div className="text-center pt-6 border-t border-slate-800/80 mt-6">
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-3">
+                New to the portal?
+              </p>
+              <Link 
+                href="/register" 
+                className="inline-flex items-center gap-2 justify-center w-full px-4 py-3 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.05] text-slate-300 hover:text-white font-extrabold text-xs rounded-xl transition-all tracking-wide hover:scale-[1.01] active:scale-99"
+              >
+                <span>Register Property Owner/Admin</span>
+                <ArrowRight className="h-3.5 w-3.5 text-brand-400" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
     </div>
   )
 }
+
