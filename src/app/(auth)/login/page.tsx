@@ -55,16 +55,30 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-slate-50">
-      <div className="w-full max-w-md bg-white border border-slate-100 rounded-[24px] shadow-xl shadow-slate-100/50 p-8 space-y-6">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-slate-50 relative overflow-hidden">
+      {/* Background radial gradient dot pattern */}
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(#e2e8f0_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-70" />
+      
+      {/* Aurora glow indicators */}
+      <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-brand-500/10 blur-3xl -z-10 animate-pulse duration-[8000ms]" />
+      <div className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-indigo-500/10 blur-3xl -z-10 animate-pulse duration-[12000ms]" />
+
+      {/* Main Glassmorphic Card Container */}
+      <div className="w-full max-w-md bg-white/80 backdrop-blur-xl border border-white/60 rounded-[32px] shadow-2xl shadow-slate-200/50 p-8 md:p-10 space-y-8 relative z-10 transition-all duration-300">
         
         {/* Branding header */}
-        <div className="flex flex-col items-center text-center space-y-2">
-          <div className="h-12 w-12 rounded-2xl bg-brand-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
-            <Building2 className="h-6 w-6" />
+        <div className="flex flex-col items-center text-center space-y-3">
+          <div className="h-14 w-14 rounded-2xl bg-linear-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 transform hover:scale-105 transition-transform duration-300">
+            <Building2 className="h-7 w-7" />
           </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">TenM</h1>
-          <p className="text-sm text-slate-400 font-medium">Tenant Management Portal</p>
+          <div className="space-y-1">
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight bg-linear-to-r from-slate-900 via-brand-950 to-slate-900 bg-clip-text text-transparent">
+              TenM
+            </h1>
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">
+              Tenant Management Portal
+            </p>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -88,7 +102,7 @@ export default function LoginPage() {
 
           <Button 
             type="submit" 
-            className="w-full py-3.5 text-sm" 
+            className="w-full py-4 text-sm font-bold bg-linear-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 shadow-md shadow-brand-500/10 hover:shadow-lg hover:shadow-brand-500/20 transition-all rounded-2xl active:scale-98 cursor-pointer mt-2" 
             isLoading={isLoading}
           >
             Sign In

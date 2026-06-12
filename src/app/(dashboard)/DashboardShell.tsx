@@ -32,8 +32,25 @@ interface DashboardShellProps {
 
 export function DashboardShell({ children, user }: DashboardShellProps) {
   const [isMoreOpen, setIsMoreOpen] = useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
+
+  // Initialize collapsed state from localStorage after mount to avoid hydration mismatch
+  React.useEffect(() => {
+    const stored = localStorage.getItem('sidebar_collapsed')
+    if (stored === 'true') {
+      setIsSidebarCollapsed(true)
+    }
+  }, [])
+
+  const handleToggleSidebar = () => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev
+      localStorage.setItem('sidebar_collapsed', String(next))
+      return next
+    })
+  }
 
   const handleLogout = async () => {
     setIsMoreOpen(false)
@@ -69,7 +86,11 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
       {/* Desktop Sidebar */}
-      <Sidebar user={user} />
+      <Sidebar 
+        user={user} 
+        isCollapsed={isSidebarCollapsed} 
+        onToggle={handleToggleSidebar} 
+      />
 
       {/* Main Container */}
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
