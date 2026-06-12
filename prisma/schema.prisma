@@ -1,0 +1,196 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String       @id @default(cuid())
+  name         String
+  email        String       @unique
+  password     String
+  userType     UserType     @default(SINGLE)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  properties   Property[]
+  settings     Settings?
+}
+
+enum UserType {
+  SINGLE      // manages one property
+  MULTIPLE    // manages multiple properties
+}
+
+model Settings {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id])
+  appraisalPercent      Float    @default(5.0)   // annual rent hike %
+  waterCostPerLitre     Float    @default(0.05)  // cost per litre
+  lateFeeAmount         Float    @default(0.0)
+  lateFeeGraceDays      Int      @default(5)
+  updatedAt             DateTime @updatedAt
+}
+
+model Property {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  name        String
+  address     String
+  city        String
+  type        PropertyType @default(RESIDENTIAL)
+  status      Status     @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  flats       Flat[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum PropertyType {
+  RESIDENTIAL
+  COMMERCIAL
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+model Flat {
+  id           String      @id @default(cuid())
+  propertyId   String
+  property     Property    @relation(fields: [propertyId], references: [id])
+  flatNumber   String
+  floor        Int         @default(0)
+  bhkType      String      @default("1BHK")
+  baseRent     Float
+  status       FlatStatus  @default(VACANT)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  tenants      Tenant[]
+  rentRecords  RentRecord[]
+  waterRecords WaterRecord[]
+
+  @@index([propertyId])
+  @@index([status])
+}
+
+enum FlatStatus {
+  VACANT
+  OCCUPIED
+}
+
+model Tenant {
+  id              String          @id @default(cuid())
+  flatId          String
+  flat            Flat            @relation(fields: [flatId], references: [id])
+  name            String
+  phone           String
+  email           String?
+  idProofType     String?
+  idProofNumber   String?
+  joiningDate     DateTime
+  currentRent     Float
+  advanceAmount   Float           @default(0)
+  status          TenantStatus    @default(ACTIVE)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  rentRecords     RentRecord[]
+  advanceRecords  AdvanceRecord[]
+  rentRevisions   RentRevision[]
+
+  @@index([flatId])
+  @@index([status])
+}
+
+enum TenantStatus {
+  ACTIVE
+  VACATED
+}
+
+model RentRecord {
+  id          String      @id @default(cuid())
+  tenantId    String
+  tenant      Tenant      @relation(fields: [tenantId], references: [id])
+  flatId      String
+  flat        Flat        @relation(fields: [flatId], references: [id])
+  month       Int
+  year        Int
+  rentAmount  Float
+  paidAmount  Float       @default(0)
+  paidOn      DateTime?
+  status      RentStatus  @default(PENDING)
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([tenantId, month, year])
+  @@index([tenantId])
+  @@index([month, year])
+  @@index([status])
+}
+
+enum RentStatus {
+  PENDING
+  PAID
+  PARTIAL
+  OVERDUE
+}
+
+model WaterRecord {
+  id            String   @id @default(cuid())
+  flatId        String
+  flat          Flat     @relation(fields: [flatId], references: [id])
+  month         Int
+  year          Int
+  unitsConsumed Float    // in litres
+  costPerLitre  Float    // snapshot rate from settings
+  totalCost     Float    // computed: units * costPerLitre
+  paidOn        DateTime?
+  isPaid        Boolean  @default(false)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([flatId, month, year])
+  @@index([flatId])
+  @@index([month, year])
+}
+
+model AdvanceRecord {
+  id          String      @id @default(cuid())
+  tenantId    String
+  tenant      Tenant      @relation(fields: [tenantId], references: [id])
+  type        AdvanceType
+  amount      Float
+  date        DateTime
+  notes       String?
+  createdAt   DateTime    @default(now())
+
+  @@index([tenantId])
+}
+
+enum AdvanceType {
+  RECEIVED
+  DEDUCTED
+  REFUNDED
+}
+
+model RentRevision {
+  id              String   @id @default(cuid())
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+  previousRent    Float
+  newRent         Float
+  appraisalPercent Float
+  effectiveDate   DateTime
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  @@index([tenantId])
+}
