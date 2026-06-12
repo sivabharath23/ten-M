@@ -28,16 +28,25 @@ export function ConfirmModal({
   type = 'danger',
   isLoading = false,
 }: ConfirmModalProps) {
+  let headerIcon: React.ReactNode = undefined
+  if (type === 'danger') {
+    headerIcon = <AlertTriangle className="h-5 w-5 text-rose-500 shrink-0" />
+  } else if (type === 'warning') {
+    headerIcon = <AlertCircle className="h-5 w-5 text-warning-600 shrink-0" />
+  } else if (type === 'info') {
+    headerIcon = <Info className="h-5 w-5 text-blue-500 shrink-0" />
+  }
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={title}
-      icon={null}
+      icon={headerIcon}
       footer={
         <>
           <Button
-            variant="outline"
+            variant="cancel"
             onClick={onClose}
             disabled={isLoading}
           >
@@ -53,27 +62,13 @@ export function ConfirmModal({
         </>
       }
     >
-      <div className="flex items-start gap-4">
+      <div className="space-y-2 py-1">
+        <p className="text-sm font-semibold text-slate-700 leading-relaxed">{message}</p>
         {type === 'danger' && (
-          <div className="h-10 w-10 rounded-full bg-danger-50 border border-danger-100 flex items-center justify-center text-danger-500 shrink-0">
-            <AlertTriangle className="h-5 w-5" />
-          </div>
+          <p className="text-xs text-slate-400 font-medium">This action cannot be undone.</p>
         )}
-        {type === 'warning' && (
-          <div className="h-10 w-10 rounded-full bg-warning-50 border border-warning-100 flex items-center justify-center text-warning-700 shrink-0">
-            <AlertCircle className="h-5 w-5" />
-          </div>
-        )}
-        {type === 'info' && (
-          <div className="h-10 w-10 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center text-brand-600 shrink-0">
-            <Info className="h-5 w-5" />
-          </div>
-        )}
-        <div className="space-y-1">
-          <p className="text-sm font-semibold text-slate-800">{message}</p>
-          <p className="text-xs text-slate-400">This action cannot be undone.</p>
-        </div>
       </div>
     </Modal>
   )
 }
+

@@ -17,6 +17,7 @@ export const settingsSchema = z.object({
   waterCostPerLitre: z.number().min(0, 'Must be 0 or positive'),
   lateFeeAmount: z.number().min(0, 'Must be 0 or positive'),
   lateFeeGraceDays: z.number().int().min(0, 'Must be 0 or positive'),
+  maxFloors: z.number().int().min(1, 'Max floors must be at least 1').max(100, 'Max floors cannot exceed 100'),
 })
 
 export const propertySchema = z.object({

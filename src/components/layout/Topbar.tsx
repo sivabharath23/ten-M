@@ -3,7 +3,7 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { LogOut, Building2 } from 'lucide-react'
+import { LogOut, Building2, Home } from 'lucide-react'
 
 interface UserSession {
   name: string
@@ -31,9 +31,25 @@ export function Topbar({ user, title = 'TenM', onLogoutRequest }: TopbarProps) {
       <div className="flex items-center gap-4">
         {user && (
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex flex-col text-right">
-              <span className="text-xs font-black text-slate-800 leading-tight">{user.name}</span>
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{user.userType === 'SINGLE' ? 'Single Landlord' : 'Multi-Property'}</span>
+            <div className="hidden sm:flex flex-col text-right items-end gap-1">
+              <span className="text-xs font-black text-slate-800 leading-none">{user.name}</span>
+              <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${
+                user.userType === 'SINGLE'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60'
+                  : 'bg-brand-50 text-brand-700 border-brand-200/60'
+              }`}>
+                {user.userType === 'SINGLE' ? (
+                  <>
+                    <Home className="h-2.5 w-2.5" />
+                    <span>Single Landlord</span>
+                  </>
+                ) : (
+                  <>
+                    <Building2 className="h-2.5 w-2.5" />
+                    <span>Multi-Property</span>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Mobile Logout trigger */}

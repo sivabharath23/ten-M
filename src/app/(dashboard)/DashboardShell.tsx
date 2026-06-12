@@ -17,7 +17,9 @@ import {
   Settings,
   LogOut,
   X,
-  User
+  User,
+  Home,
+  Building2
 } from 'lucide-react'
 
 interface UserSession {
@@ -34,7 +36,7 @@ interface DashboardShellProps {
 export function DashboardShell({ children, user }: DashboardShellProps) {
   const [isMoreOpen, setIsMoreOpen] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
-  
+
   // State for logout confirmation popup
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -104,15 +106,15 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
       {/* Main Container */}
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         {/* Top Header */}
-        <Topbar 
-          user={user} 
-          title={getPageTitle()} 
+        <Topbar
+          user={user}
+          title={getPageTitle()}
           onLogoutRequest={() => setIsLogoutConfirmOpen(true)}
         />
 
         {/* Scrollable Content Pane */}
         <main className="flex-1 overflow-y-auto p-3 md:p-4 pb-20 md:pb-6">
-          <div className="max-w-6xl mx-auto space-y-6 animate-page-transition-enter">
+          <div className="max-w-0xl mx-auto space-y-6 animate-page-transition-enter">
             {children}
           </div>
         </main>
@@ -137,13 +139,28 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
 
             {/* Header */}
             <div className="flex items-center justify-between px-6 pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-700 text-xs">
+              <div className="flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center font-bold text-brand-700 text-xs shrink-0">
                   {user?.name.charAt(0).toUpperCase()}
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-800 leading-tight">{user?.name}</h4>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase">{user?.userType === 'SINGLE' ? 'Single Landlord' : 'Multi-Property'}</span>
+                <div className="flex flex-col gap-1 items-start">
+                  <h4 className="text-xs font-black text-slate-800 leading-none">{user?.name}</h4>
+                  <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider border ${user?.userType === 'SINGLE'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60'
+                    : 'bg-brand-50 text-brand-700 border-brand-200/60'
+                    }`}>
+                    {user?.userType === 'SINGLE' ? (
+                      <>
+                        <Home className="h-2 w-2" />
+                        <span>Single Landlord</span>
+                      </>
+                    ) : (
+                      <>
+                        <Building2 className="h-2 w-2" />
+                        <span>Multi-Property</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
               <button
@@ -165,8 +182,8 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
                     href={link.href}
                     onClick={() => setIsMoreOpen(false)}
                     className={`flex flex-col items-center justify-center p-4 border rounded-xl gap-2 transition-all ${isActive
-                        ? 'bg-brand-50 border-brand-200 text-brand-700 font-bold'
-                        : 'bg-slate-50 border-slate-100 text-slate-600 hover:bg-slate-100/50'
+                      ? 'bg-brand-50 border-brand-200 text-brand-700 font-bold'
+                      : 'bg-slate-50 border-slate-100 text-slate-600 hover:bg-slate-100/50'
                       }`}
                   >
                     <Icon className="h-5 w-5 stroke-2" />

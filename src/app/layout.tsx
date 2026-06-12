@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next"
-import { Inter } from "next/font/google"
+import { Plus_Jakarta_Sans } from "next/font/google"
 import "./globals.css"
 import { Toaster } from 'sonner'
 
-const inter = Inter({
+const fontSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
 })
@@ -33,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    <html lang="en" className={`${fontSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans">
         {children}
         <Toaster position="top-right" richColors />

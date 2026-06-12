@@ -14,7 +14,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { Users, Plus, Phone, Calendar, UserPlus, FileText } from 'lucide-react'
+import { Users, Plus, Phone, Calendar, UserPlus, FileText, CreditCard } from 'lucide-react'
 
 type TenantFormInputs = typeof tenantSchema._output
 
@@ -56,6 +56,7 @@ export default function TenantsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [filterStatus, setFilterStatus] = useState<'ACTIVE' | 'VACATED'>('ACTIVE')
+  const [docImage, setDocImage] = useState<string>('')
 
   const {
     register,
@@ -153,7 +154,48 @@ export default function TenantsPage() {
     })
     setSelectedPropertyId('')
     setFlats([])
+    setDocImage('')
     setIsModalOpen(true)
+  }
+
+  const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const base64String = reader.result as string
+      const img = new Image()
+      img.src = base64String
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const MAX_WIDTH = 1000
+        const MAX_HEIGHT = 1000
+        let width = img.width
+        let height = img.height
+        
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width
+            width = MAX_WIDTH
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height
+            height = MAX_HEIGHT
+          }
+        }
+        
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        ctx?.drawImage(img, 0, 0, width, height)
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6)
+        setDocImage(compressedBase64)
+        toast.success('Identity document selected & compressed successfully!')
+      }
+    }
+    reader.readAsDataURL(file)
   }
 
   const onSubmit = async (data: TenantFormInputs) => {
@@ -162,7 +204,10 @@ export default function TenantsPage() {
       const response = await fetch('/api/tenants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          idProofUrl: docImage || undefined,
+        }),
       })
       const resData = await response.json()
       if (!response.ok) throw new Error(resData.error || 'Failed to register tenant')
@@ -170,8 +215,8 @@ export default function TenantsPage() {
       toast.success('Tenant registered successfully!')
       setIsModalOpen(false)
       fetchData()
-    } catch (err: any) {
-      toast.error(err.message || 'Could not save tenant details')
+    } catch (error: any) {
+      toast.error(error.message || 'Could not register tenant. Confirm details and try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -358,6 +403,40 @@ export default function TenantsPage() {
               error={errors.idProofNumber?.message}
               {...register('idProofNumber')}
             />
+          </div>
+ 
+          {/* Document File / Photo Upload */}
+          <div className="border border-dashed border-slate-200 rounded-xl p-3 bg-slate-50/50 space-y-2">
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">
+              Identity Document Image
+            </label>
+            <div className="flex items-center gap-3">
+              {docImage ? (
+                <div className="relative h-12 w-16 border border-slate-100 rounded-lg overflow-hidden bg-slate-50 shrink-0">
+                  <img src={docImage} alt="ID Document Preview" className="object-contain h-full w-full" />
+                </div>
+              ) : (
+                <div className="h-12 w-16 border border-dashed border-slate-200 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+                  <CreditCard className="h-5 w-5" />
+                </div>
+              )}
+              <div className="flex-1">
+                {docImage ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-emerald-600">Document selected</span>
+                    <button type="button" className="text-[10px] font-bold text-rose-500 hover:underline cursor-pointer" onClick={() => setDocImage('')}>
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-slate-400 font-semibold leading-tight">Attach a scanned copy or take a live picture using your camera.</p>
+                )}
+                <label className="mt-1 cursor-pointer inline-flex items-center gap-1 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-[11px] font-bold text-slate-600 transition-colors">
+                  <span>{docImage ? 'Replace Image' : 'Select File / Take Photo'}</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleDocumentChange} />
+                </label>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2">

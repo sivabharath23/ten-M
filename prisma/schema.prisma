@@ -27,10 +27,11 @@ model Settings {
   id                    String   @id @default(cuid())
   userId                String   @unique
   user                  User     @relation(fields: [userId], references: [id])
-  appraisalPercent      Float    @default(5.0)   // annual rent hike %
-  waterCostPerLitre     Float    @default(0.05)  // cost per litre
+  appraisalPercent      Float    @default(5.0)   // Annual rent hike %
+  waterCostPerLitre     Float    @default(0.05)  // Cost per litre
   lateFeeAmount         Float    @default(0.0)
   lateFeeGraceDays      Int      @default(5)
+  maxFloors             Int      @default(10)
   updatedAt             DateTime @updatedAt
 }
 

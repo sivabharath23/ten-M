@@ -29,6 +29,7 @@ export default function SettingsPage() {
       waterCostPerLitre: 0.05,
       lateFeeAmount: 0.0,
       lateFeeGraceDays: 5,
+      maxFloors: 10,
     },
   })
 
@@ -44,6 +45,7 @@ export default function SettingsPage() {
           waterCostPerLitre: data.waterCostPerLitre,
           lateFeeAmount: data.lateFeeAmount,
           lateFeeGraceDays: data.lateFeeGraceDays,
+          maxFloors: data.maxFloors ?? 10,
         })
       }
     } catch {
@@ -143,6 +145,18 @@ export default function SettingsPage() {
             </div>
             <p className="text-[11px] text-slate-400 font-semibold -mt-2">
               Fees applied on overdue invoices after the specified calendar grace days.
+            </p>
+
+            <Input
+              id="maxFloors"
+              type="number"
+              label="Maximum Building Floors"
+              placeholder="e.g. 10"
+              error={errors.maxFloors?.message}
+              {...register('maxFloors', { valueAsNumber: true })}
+            />
+            <p className="text-[11px] text-slate-400 font-semibold -mt-2">
+              Defines the highest floor select option available when registering or modifying flat units (e.g. 10 allows selecting from Ground up to 10th floor).
             </p>
           </Card>
 

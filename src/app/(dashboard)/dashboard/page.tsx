@@ -6,14 +6,14 @@ import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { 
-  DollarSign, 
-  Percent, 
-  DoorOpen, 
-  TrendingUp, 
-  Wallet, 
-  Plus, 
-  UserPlus, 
+import {
+  DollarSign,
+  Percent,
+  DoorOpen,
+  TrendingUp,
+  Wallet,
+  Plus,
+  UserPlus,
   Building2,
   RefreshCw,
   ArrowRight,
@@ -94,10 +94,10 @@ export default function DashboardPage() {
       })
       const resData = await response.json()
       if (!response.ok) throw new Error(resData.error || 'Generation failed')
-      
+
       toast.success(
-        resData.generated > 0 
-          ? `Generated ${resData.generated} new rent records!` 
+        resData.generated > 0
+          ? `Generated ${resData.generated} new rent records!`
           : 'Rent records are already up-to-date.'
       )
       fetchDashboardData()
@@ -141,15 +141,15 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-brand-600 text-white rounded-3xl p-6 gap-4 shadow-lg shadow-brand-500/10">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-brand-600 text-white rounded-3xl p-5 gap-4 shadow-lg shadow-brand-500/10">
         <div>
           <h2 className="text-xl font-black tracking-tight">Overview Dashboard</h2>
           <p className="text-xs text-brand-100 font-semibold mt-0.5">Welcome back to your Tenant Management System</p>
         </div>
-        <Button 
+        <Button
           onClick={handleQuickGenerate}
           isLoading={isGenerating}
-          variant="outline" 
+          variant="outline"
           className="text-xs font-bold bg-white/10 hover:bg-white/20 border-white/20 text-white gap-1.5 self-start sm:self-auto cursor-pointer"
         >
           <RefreshCw className="h-4 w-4" />
@@ -169,9 +169,9 @@ export default function DashboardPage() {
         ].map((kpi, idx) => {
           const Icon = kpi.icon
           return (
-            <Card key={idx} className="p-4 flex flex-col justify-between space-y-3">
+            <Card key={idx} className="p-3 flex flex-col justify-between space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">{kpi.label}</span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{kpi.label}</span>
                 <div className={`h-7 w-7 rounded-lg flex items-center justify-center border ${kpi.color}`}>
                   <Icon className="h-4 w-4" />
                 </div>
@@ -187,14 +187,14 @@ export default function DashboardPage() {
 
       {/* Charts section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         {/* SVG Bar Chart */}
         <Card className="lg:col-span-2 space-y-4">
           <div>
             <h3 className="font-extrabold text-slate-800 text-sm">Rent Collection History</h3>
             <p className="text-xs text-slate-400 font-semibold">6-month comparison of collected vs pending dues</p>
           </div>
-          
+
           <div className="h-60 flex items-end justify-between pt-4 px-2">
             {charts.collection6m.map((bar, idx) => {
               const collectedHeight = Math.round((bar.collected / maxBarValue) * 100)
@@ -204,15 +204,15 @@ export default function DashboardPage() {
                   {/* Visual Bar Column */}
                   <div className="w-8 flex flex-col justify-end gap-[2px] h-44 bg-slate-50 rounded-t-lg overflow-hidden">
                     {bar.pending > 0 && (
-                      <div 
-                        style={{ height: `${Math.max(4, pendingHeight)}%` }} 
+                      <div
+                        style={{ height: `${Math.max(4, pendingHeight)}%` }}
                         className="w-full bg-amber-500 rounded-t-xs"
                         title={`Pending: ₹${bar.pending.toLocaleString()}`}
                       />
                     )}
                     {bar.collected > 0 && (
-                      <div 
-                        style={{ height: `${Math.max(4, collectedHeight)}%` }} 
+                      <div
+                        style={{ height: `${Math.max(4, collectedHeight)}%` }}
                         className="w-full bg-brand-600 rounded-t-xs"
                         title={`Collected: ₹${bar.collected.toLocaleString()}`}
                       />
@@ -303,12 +303,11 @@ export default function DashboardPage() {
               {activities.map((act, idx) => (
                 <div key={idx} className="relative space-y-0.5">
                   {/* Timeline bullet */}
-                  <div className={`absolute -left-[27px] top-1 h-2.5 w-2.5 rounded-full border border-white ${
-                    act.type === 'rent' ? 'bg-emerald-500' :
+                  <div className={`absolute -left-[27px] top-1 h-2.5 w-2.5 rounded-full border border-white ${act.type === 'rent' ? 'bg-emerald-500' :
                     act.type === 'tenant' ? 'bg-brand-600' :
-                    act.type === 'appraisal' ? 'bg-violet-500' :
-                    'bg-sky-500'
-                  }`} />
+                      act.type === 'appraisal' ? 'bg-violet-500' :
+                        'bg-sky-500'
+                    }`} />
                   <div className="flex items-center justify-between text-[10px] font-bold text-slate-400">
                     <span className="uppercase tracking-wider">{act.type}</span>
                     <span>{new Date(act.date).toLocaleDateString()}</span>

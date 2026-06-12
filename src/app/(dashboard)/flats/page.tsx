@@ -50,6 +50,7 @@ export default function FlatsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [maxFloors, setMaxFloors] = useState(10)
 
   const {
     register,
@@ -67,6 +68,20 @@ export default function FlatsPage() {
       baseRent: 10000,
     },
   })
+
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch('/api/settings')
+      if (response.ok) {
+        const data = await response.json()
+        if (data && typeof data.maxFloors === 'number') {
+          setMaxFloors(data.maxFloors)
+        }
+      }
+    } catch (e) {
+      console.error('Error fetching settings:', e)
+    }
+  }
 
   const fetchFlatsAndProperties = async () => {
     setIsLoading(true)
@@ -94,6 +109,7 @@ export default function FlatsPage() {
 
   useEffect(() => {
     fetchFlatsAndProperties()
+    fetchSettings()
   }, [selectedPropertyId])
 
   const handleOpenAddModal = () => {
@@ -263,11 +279,17 @@ export default function FlatsPage() {
             {...register('flatNumber')}
           />
 
-          <Input
+          <Select
             id="floor"
-            type="number"
             label="Floor Level"
-            placeholder="e.g. 0 for ground"
+            options={Array.from({ length: maxFloors + 1 }, (_, i) => ({
+              label: i === 0 ? 'Ground' : 
+                     i === 1 ? '1st Floor' : 
+                     i === 2 ? '2nd Floor' : 
+                     i === 3 ? '3rd Floor' : 
+                     `${i}th Floor`,
+              value: i
+            }))}
             error={errors.floor?.message}
             {...register('floor', { valueAsNumber: true })}
           />

@@ -27,7 +27,8 @@ import {
   FileText,
   Upload,
   Eye,
-  RefreshCw
+  RefreshCw,
+  Edit
 } from 'lucide-react'
 
 interface Property {
@@ -119,9 +120,17 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
   const [isAdvanceModalOpen, setIsAdvanceModalOpen] = useState(false)
   const [isAppraisalModalOpen, setIsAppraisalModalOpen] = useState(false)
   const [isUpdateRentModalOpen, setIsUpdateRentModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   // Forms state
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [editForm, setEditForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    idProofType: '',
+    idProofNumber: ''
+  })
   const [selectedRentRecord, setSelectedRentRecord] = useState<RentRecord | null>(null)
   
   // Advance form state
@@ -196,6 +205,51 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
       fetchTenantDetail()
     } catch (err: any) {
       toast.error(err.message || 'Failed to reactivate tenant')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleOpenEditModal = () => {
+    if (!tenant) return
+    setEditForm({
+      name: tenant.name,
+      phone: tenant.phone,
+      email: tenant.email || '',
+      idProofType: tenant.idProofType || '',
+      idProofNumber: tenant.idProofNumber || ''
+    })
+    setIsEditModalOpen(true)
+  }
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editForm.name || editForm.name.trim().length < 2) {
+      toast.error('Name must be at least 2 characters')
+      return
+    }
+    const phoneRegex = /^[0-9+() -]{10,15}$/
+    if (!phoneRegex.test(editForm.phone)) {
+      toast.error('Please enter a valid phone number (10-15 digits)')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const response = await fetch(`/api/tenants/${tenantId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm)
+      })
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to update tenant details')
+      }
+      toast.success('Tenant details updated successfully!')
+      setIsEditModalOpen(false)
+      fetchTenantDetail()
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update tenant details')
     } finally {
       setIsSubmitting(false)
     }
@@ -450,6 +504,10 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
             {/* Quick Actions Panel */}
             {tenant.status === 'ACTIVE' ? (
               <div className="flex flex-col gap-2 pt-2">
+                <Button onClick={handleOpenEditModal} variant="outline" size="sm" className="w-full text-xs font-bold gap-1 text-slate-700">
+                  <Edit className="h-3.5 w-3.5" />
+                  <span>Edit Tenant Details</span>
+                </Button>
                 <Button onClick={() => setIsAppraisalModalOpen(true)} variant="outline" size="sm" className="w-full text-xs font-bold gap-1 text-slate-700">
                   <TrendingUp className="h-3.5 w-3.5" />
                   <span>Apply Rent Appraisal</span>
@@ -465,6 +523,10 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
               </div>
             ) : (
               <div className="flex flex-col gap-2 pt-2">
+                <Button onClick={handleOpenEditModal} variant="outline" size="sm" className="w-full text-xs font-bold gap-1 text-slate-700">
+                  <Edit className="h-3.5 w-3.5" />
+                  <span>Edit Tenant Details</span>
+                </Button>
                 <Button onClick={() => setIsReactivateModalOpen(true)} variant="secondary" size="sm" className="w-full text-xs font-bold gap-1">
                   <RefreshCw className="h-3.5 w-3.5 shrink-0" />
                   <span>Revert to Active / Occupied</span>
@@ -887,6 +949,75 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
             Close Preview
           </Button>
         </div>
+      </Modal>
+
+      {/* Edit Tenant Details Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Edit Tenant Details"
+      >
+        <form onSubmit={handleEditSubmit} className="space-y-4">
+          <Input
+            id="editName"
+            label="Tenant Name"
+            placeholder="e.g. John Doe"
+            required
+            value={editForm.name}
+            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+          />
+
+          <Input
+            id="editPhone"
+            label="Phone Number"
+            placeholder="e.g. 9876543210"
+            required
+            value={editForm.phone}
+            onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+          />
+
+          <Input
+            id="editEmail"
+            type="email"
+            label="Email Address (Optional)"
+            placeholder="e.g. john@example.com"
+            value={editForm.email}
+            onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              id="editIdProofType"
+              label="ID Proof Type"
+              options={[
+                { label: 'Aadhaar Card', value: 'Aadhaar Card' },
+                { label: 'PAN Card', value: 'PAN Card' },
+                { label: 'Driving License', value: 'Driving License' },
+                { label: 'Passport', value: 'Passport' },
+                { label: 'Other', value: 'Other' },
+              ]}
+              value={editForm.idProofType}
+              onChange={(e) => setEditForm({ ...editForm, idProofType: e.target.value })}
+            />
+
+            <Input
+              id="editIdProofNumber"
+              label="ID Proof Number"
+              placeholder="e.g. XXXX-XXXX-XXXX"
+              value={editForm.idProofNumber}
+              onChange={(e) => setEditForm({ ...editForm, idProofNumber: e.target.value })}
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="button" variant="ghost" onClick={() => setIsEditModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" isLoading={isSubmitting}>
+              Save Changes
+            </Button>
+          </div>
+        </form>
       </Modal>
     </div>
   )
