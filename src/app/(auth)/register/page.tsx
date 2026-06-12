@@ -58,108 +58,110 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-slate-900 relative overflow-hidden">
-      {/* Left Column: Premium Application Showcase (visible on lg screens) */}
-      <div className="hidden lg:flex lg:w-[45%] bg-slate-950 text-white p-16 flex-col justify-between relative overflow-hidden border-r border-slate-900">
-        {/* Tech Grid Overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-15" />
-        
-        {/* Soft Glowing Orbs */}
-        <div className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full bg-brand-500/10 blur-[120px] -z-10 animate-pulse duration-[10s]" />
-        <div className="absolute top-1/2 -right-40 w-[400px] h-[400px] rounded-full bg-indigo-500/10 blur-[100px] -z-10 animate-pulse duration-[15s]" />
+    <div className="min-h-screen flex flex-col lg:flex-row bg-slate-50 font-sans text-slate-800 relative overflow-hidden">
+      {/* Background Soft Pastel Glows */}
+      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-brand-500/5 blur-[120px] -z-10 animate-pulse duration-[8s]" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[700px] h-[700px] rounded-full bg-indigo-500/5 blur-[140px] -z-10 animate-pulse duration-[12s]" />
+      <div className="absolute top-1/3 left-1/3 w-[300px] h-[300px] rounded-full bg-rose-500/3 blur-[100px] -z-10" />
 
-        {/* Brand Header */}
-        <div className="flex items-center gap-3 relative z-10">
-          <div className="h-11 w-11 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/25">
+      {/* Grid Pattern Overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-30 -z-10" />
+
+      {/* Left Column: Premium App Introduction */}
+      <div className="hidden lg:flex lg:w-[45%] p-16 flex-col justify-between border-r border-slate-200/60 bg-white/20 backdrop-blur-md relative overflow-hidden">
+        
+        {/* Logo Header */}
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
             <Building2 className="h-5 w-5" />
           </div>
           <div className="flex flex-col">
-            <span className="text-lg font-black tracking-wider text-white">TenM</span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest -mt-1">Tenant Management</span>
+            <span className="text-lg font-black tracking-wider text-slate-900 leading-none">TenM</span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Tenant Management</span>
           </div>
         </div>
 
-        {/* App Pitch & Features */}
-        <div className="space-y-12 my-auto relative z-10 max-w-lg">
+        {/* Features & Headings */}
+        <div className="space-y-12 my-auto max-w-md">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-500/10 border border-brand-500/25 rounded-full text-brand-400 text-xs font-bold tracking-wide">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-500/5 border border-brand-500/10 rounded-full text-brand-600 text-xs font-bold tracking-wide">
               <Sparkles className="h-3.5 w-3.5" />
               <span>Next-Gen Operations Hub</span>
             </div>
-            <h2 className="text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-slate-100 to-slate-400 leading-tight">
+            <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 leading-tight bg-gradient-to-br from-slate-900 to-slate-700 bg-clip-text text-transparent">
               Simplified Property & Tenant Management
             </h2>
-            <p className="text-slate-400 text-sm font-semibold leading-relaxed">
-              Automated workflows, utilities billing, and tenant appraisal revisions integrated into a single unified workspace.
+            <p className="text-slate-500 text-sm font-semibold leading-relaxed">
+              Automate rent collection, track volumetric water utility consumption, and streamline annual lease revisions in one platform.
             </p>
           </div>
 
-          <div className="space-y-5">
-            {/* Feature Item 1 */}
-            <div className="flex gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300">
-              <div className="h-10 w-10 shrink-0 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400">
+          <div className="space-y-4">
+            {/* Feature Tile 1 */}
+            <div className="flex gap-4 p-4 bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.015)] rounded-2xl hover:shadow-[0_12px_45px_rgb(0,0,0,0.03)] hover:-translate-y-0.5 transition-all duration-300">
+              <div className="h-10 w-10 shrink-0 rounded-xl bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center">
                 <Receipt className="h-5 w-5" />
               </div>
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold text-slate-200">Rent & Late Fee Tracking</h4>
-                <p className="text-xs text-slate-400 leading-relaxed font-semibold">Log monthly payments, record partial balances, and customize grace days.</p>
+              <div className="space-y-0.5">
+                <h4 className="text-sm font-bold text-slate-800">Rent & Late Fee Tracking</h4>
+                <p className="text-xs text-slate-500 leading-relaxed font-semibold">Record monthly payments, note partial collections, and apply automated grace days.</p>
               </div>
             </div>
 
-            {/* Feature Item 2 */}
-            <div className="flex gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300">
-              <div className="h-10 w-10 shrink-0 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+            {/* Feature Tile 2 */}
+            <div className="flex gap-4 p-4 bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.015)] rounded-2xl hover:shadow-[0_12px_45px_rgb(0,0,0,0.03)] hover:-translate-y-0.5 transition-all duration-300">
+              <div className="h-10 w-10 shrink-0 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center">
                 <Droplet className="h-5 w-5" />
               </div>
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold text-slate-200">Water Consumption Billing</h4>
-                <p className="text-xs text-slate-400 leading-relaxed font-semibold">Record volumetric usage per flat and auto-calculate bills with set tariffs.</p>
+              <div className="space-y-0.5">
+                <h4 className="text-sm font-bold text-slate-800">Water Consumption Billing</h4>
+                <p className="text-xs text-slate-500 leading-relaxed font-semibold">Log consumption per flat and automatically compute utility bills with set tariffs.</p>
               </div>
             </div>
 
-            {/* Feature Item 3 */}
-            <div className="flex gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300">
-              <div className="h-10 w-10 shrink-0 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            {/* Feature Tile 3 */}
+            <div className="flex gap-4 p-4 bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.015)] rounded-2xl hover:shadow-[0_12px_45px_rgb(0,0,0,0.03)] hover:-translate-y-0.5 transition-all duration-300">
+              <div className="h-10 w-10 shrink-0 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center">
                 <TrendingUp className="h-5 w-5" />
               </div>
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold text-slate-200">Rent Appraisal Engine</h4>
-                <p className="text-xs text-slate-400 leading-relaxed font-semibold">Automate annual lease increments seamlessly on tenant anniversaries.</p>
+              <div className="space-y-0.5">
+                <h4 className="text-sm font-bold text-slate-800">Rent Appraisal Engine</h4>
+                <p className="text-xs text-slate-500 leading-relaxed font-semibold">Automate annual lease revision cycles cleanly on tenant anniversary dates.</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Live System Stats Widget */}
-        <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/[0.06] rounded-2xl max-w-sm relative z-10 backdrop-blur-md">
+        {/* Stats Preview Widget */}
+        <div className="flex items-center justify-between p-4 bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.015)] rounded-2xl max-w-sm">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+            <div className="h-9 w-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Average Occupancy</p>
-              <p className="text-sm font-extrabold text-slate-100">98.4% Across Properties</p>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Average Occupancy</p>
+              <p className="text-xs font-extrabold text-slate-800">98.4% Across Real Estate Portfolios</p>
             </div>
           </div>
-          <span className="text-[9px] font-black bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full">LIVE PREVIEW</span>
+          <span className="text-[9px] font-black bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">LIVE PREVIEW</span>
         </div>
       </div>
 
-      {/* Right Column: Dynamic Form (centered on mobile, split on desktop) */}
-      <div className="flex-1 flex items-center justify-center p-6 md:p-12 relative">
-        {/* Floating Form Card */}
-        <div className="w-full max-w-md bg-slate-900/40 backdrop-blur-2xl border border-white/[0.06] rounded-[32px] p-8 md:p-10 space-y-8 shadow-[0_32px_64px_rgba(0,0,0,0.5)] relative z-10 transition-all duration-300">
+      {/* Right Column: Premium Auth Form Card */}
+      <div className="flex-1 flex items-center justify-center p-6 md:p-12">
+        {/* Main Form Card */}
+        <div className="w-full max-w-md bg-white border border-slate-100 shadow-[0_30px_60px_rgba(15,23,42,0.04)] rounded-[32px] p-8 md:p-10 space-y-8 relative z-10 transition-all duration-300">
           
-          {/* Header */}
+          {/* Header titles */}
           <div className="space-y-2 text-center lg:text-left">
             {/* Small Brand Logo for Mobile */}
             <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 mx-auto lg:mx-0 lg:hidden mb-4">
               <Building2 className="h-5 w-5" />
             </div>
-            <h1 className="text-2xl font-black text-white tracking-tight">
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
               Register Owner/Admin
             </h1>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">
               Tenant Management Portal
             </p>
           </div>
@@ -171,7 +173,7 @@ export default function RegisterPage() {
               label="Full Name"
               placeholder="John Doe"
               error={errors.name?.message}
-              className="!bg-slate-950/60 !border-slate-800/80 !text-slate-100 focus:!border-brand-500 focus:!ring-brand-500/10 !placeholder-slate-600 !rounded-xl !py-3 !text-sm transition-all duration-300"
+              className="!bg-slate-50/50 !border-slate-200/80 !text-slate-900 focus:!border-brand-500 focus:!ring-brand-500/10 focus:!bg-white !rounded-xl !py-3 !text-sm transition-all duration-300"
               {...register('name')}
             />
 
@@ -181,7 +183,7 @@ export default function RegisterPage() {
               label="Email Address"
               placeholder="john@example.com"
               error={errors.email?.message}
-              className="!bg-slate-950/60 !border-slate-800/80 !text-slate-100 focus:!border-brand-500 focus:!ring-brand-500/10 !placeholder-slate-600 !rounded-xl !py-3 !text-sm transition-all duration-300"
+              className="!bg-slate-50/50 !border-slate-200/80 !text-slate-900 focus:!border-brand-500 focus:!ring-brand-500/10 focus:!bg-white !rounded-xl !py-3 !text-sm transition-all duration-300"
               {...register('email')}
             />
 
@@ -191,7 +193,7 @@ export default function RegisterPage() {
               label="Password"
               placeholder="Min. 8 characters"
               error={errors.password?.message}
-              className="!bg-slate-950/60 !border-slate-800/80 !text-slate-100 focus:!border-brand-500 focus:!ring-brand-500/10 !placeholder-slate-600 !rounded-xl !py-3 !text-sm transition-all duration-300"
+              className="!bg-slate-50/50 !border-slate-200/80 !text-slate-900 focus:!border-brand-500 focus:!ring-brand-500/10 focus:!bg-white !rounded-xl !py-3 !text-sm transition-all duration-300"
               {...register('password')}
             />
 
@@ -203,13 +205,13 @@ export default function RegisterPage() {
                 { label: 'Multiple Properties (e.g. Agency or Estate Owner)', value: 'MULTIPLE' },
               ]}
               error={errors.userType?.message}
-              className="!bg-slate-950/60 !border-slate-800/80 !text-slate-100 focus:!border-brand-500 focus:!ring-brand-500/10 !rounded-xl !py-3 !text-sm transition-all duration-300"
+              className="!bg-slate-50/50 !border-slate-200/80 !text-slate-900 focus:!border-brand-500 focus:!ring-brand-500/10 focus:!bg-white !rounded-xl !py-3 !text-sm transition-all duration-300"
               {...register('userType')}
             />
 
             <Button 
               type="submit" 
-              className="w-full py-4 text-xs font-extrabold uppercase tracking-widest bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 rounded-xl transition-all duration-300 active:scale-98 cursor-pointer mt-4 border-0" 
+              className="w-full py-3.5 text-xs font-extrabold uppercase tracking-widest bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white shadow-lg shadow-brand-500/20 hover:shadow-brand-500/35 rounded-xl transition-all duration-300 active:scale-98 cursor-pointer mt-4 border-0" 
               isLoading={isLoading}
             >
               Register Account
@@ -217,16 +219,16 @@ export default function RegisterPage() {
           </form>
 
           {/* Redirection Link Card */}
-          <div className="text-center pt-6 border-t border-slate-800/80 mt-6">
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-3">
+          <div className="text-center pt-5 border-t border-slate-100 mt-6">
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2.5">
               Already have an account?
             </p>
             <Link 
               href="/login" 
-              className="inline-flex items-center gap-2 justify-center w-full px-4 py-3 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.05] text-slate-300 hover:text-white font-extrabold text-xs rounded-xl transition-all tracking-wide hover:scale-[1.01] active:scale-99"
+              className="inline-flex items-center gap-1.5 justify-center w-full px-4 py-3 bg-slate-50 hover:bg-slate-100 border border-slate-100 text-slate-600 hover:text-slate-800 font-extrabold text-xs rounded-xl transition-all tracking-wide hover:scale-[1.01] active:scale-99"
             >
               <span>Sign In to Your Account</span>
-              <ArrowRight className="h-3.5 w-3.5 text-brand-400" />
+              <ArrowRight className="h-3.5 w-3.5 text-brand-600" />
             </Link>
           </div>
         </div>
