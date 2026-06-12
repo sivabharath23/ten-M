@@ -88,7 +88,7 @@ export async function PUT(
     if (!isOwner) return NextResponse.json({ error: 'Not Found' }, { status: 404 })
 
     const body = await req.json()
-    const { name, phone, email, idProofType, idProofNumber, status } = body
+    const { name, phone, email, idProofType, idProofNumber, idProofUrl, status } = body
 
     const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const currentTenant = await tx.tenant.findUnique({
@@ -104,6 +104,7 @@ export async function PUT(
           email: email !== undefined ? email : undefined,
           idProofType: idProofType !== undefined ? idProofType : undefined,
           idProofNumber: idProofNumber !== undefined ? idProofNumber : undefined,
+          idProofUrl: idProofUrl !== undefined ? idProofUrl : undefined,
           status: status !== undefined ? status : undefined,
         }
       })
@@ -113,6 +114,20 @@ export async function PUT(
         await tx.flat.update({
           where: { id: currentTenant.flatId },
           data: { status: 'VACANT' }
+        })
+      }
+
+      // If status reverted from VACATED to ACTIVE, make the flat OCCUPIED again
+      if (status === 'ACTIVE' && currentTenant.status === 'VACATED') {
+        const flatCheck = await tx.flat.findUnique({
+          where: { id: currentTenant.flatId }
+        })
+        if (flatCheck && flatCheck.status === 'OCCUPIED') {
+          throw new Error('Flat unit is currently occupied by another active tenant.')
+        }
+        await tx.flat.update({
+          where: { id: currentTenant.flatId },
+          data: { status: 'OCCUPIED' }
         })
       }
 

@@ -56,7 +56,7 @@ export function Sidebar({ user, isCollapsed, onToggle, onLogoutRequest }: Sideba
   const categories = ['Main', 'Finances', 'Management']
 
   return (
-    <aside className={`hidden md:flex flex-col border-r border-slate-200 bg-white h-screen sticky top-0 relative transition-all duration-300 ease-in-out ${
+    <aside className={`hidden md:flex flex-col border-r border-slate-200 bg-white h-screen sticky top-0 relative z-40 transition-all duration-300 ease-in-out ${
       isCollapsed ? 'w-20' : 'w-64'
     }`}>
       {/* Collapse Toggle Button */}

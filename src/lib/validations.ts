@@ -41,6 +41,7 @@ export const tenantSchema = z.object({
   email: z.string().email('Invalid email address').optional().or(z.literal('')),
   idProofType: z.string().optional().or(z.literal('')),
   idProofNumber: z.string().optional().or(z.literal('')),
+  idProofUrl: z.string().optional().or(z.literal('')),
   joiningDate: z.string().min(1, 'Joining date is required'),
   currentRent: z.number().positive('Rent must be positive'),
   advanceAmount: z.number().min(0, 'Advance must be 0 or positive'),

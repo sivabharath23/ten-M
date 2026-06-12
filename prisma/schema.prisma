@@ -94,6 +94,7 @@ model Tenant {
   email           String?
   idProofType     String?
   idProofNumber   String?
+  idProofUrl      String?
   joiningDate     DateTime
   currentRent     Float
   advanceAmount   Float           @default(0)
