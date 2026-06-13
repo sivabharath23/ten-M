@@ -221,11 +221,13 @@ export default function ReportsPage() {
           icon={<FileBarChart className="h-10 w-10 text-slate-300" />}
         />
       ) : (
-        <div className="space-y-2">
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
+        <div className="space-y-4">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
             Report Preview ({reportData.length} records)
           </span>
-          <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300">
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs md:text-sm">
                 <thead>
@@ -248,6 +250,25 @@ export default function ReportsPage() {
                 </tbody>
               </table>
             </div>
+          </div>
+
+          {/* Mobile/Tablet Card View */}
+          <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {reportData.map((row, rowIdx) => (
+              <Card key={rowIdx} className="hover:shadow-md transition-shadow duration-150 p-4 space-y-2.5">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Record #{rowIdx + 1}</span>
+                </div>
+                <div className="space-y-2 text-xs">
+                  {getTableHeaders().map((header, colIdx) => (
+                    <div key={colIdx} className="flex justify-between gap-4 py-0.5">
+                      <span className="text-slate-400 font-semibold">{header}</span>
+                      <span className="font-extrabold text-slate-800 text-right">{row[header]?.toString() || 'N/A'}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            ))}
           </div>
         </div>
       )}

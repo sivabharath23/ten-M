@@ -48,6 +48,7 @@ interface RentRecord {
   paidAmount: number
   paidOn: string | null
   status: 'PENDING' | 'PAID' | 'PARTIAL' | 'OVERDUE'
+  paymentMode: string | null
   notes: string | null
 }
 
@@ -150,6 +151,8 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
   const [rentUpdateForm, setRentUpdateForm] = useState({
     status: 'PAID' as 'PENDING' | 'PAID' | 'PARTIAL' | 'OVERDUE',
     paidAmount: 0,
+    paidOn: '',
+    paymentMode: '',
     notes: ''
   })
 
@@ -370,11 +373,21 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
     }
   }
 
+  const getTodayDateString = () => {
+    const d = new Date()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${d.getFullYear()}-${month}-${day}`
+  }
+
   const handleOpenUpdateRentModal = (record: RentRecord) => {
     setSelectedRentRecord(record)
+    const recPaidOn = record.paidOn ? new Date(record.paidOn).toISOString().split('T')[0] : getTodayDateString()
     setRentUpdateForm({
       status: record.status,
       paidAmount: record.status === 'PAID' ? record.rentAmount : record.paidAmount || record.rentAmount,
+      paidOn: recPaidOn,
+      paymentMode: record.paymentMode || 'Cash',
       notes: record.notes || ''
     })
     setIsUpdateRentModalOpen(true)
@@ -391,7 +404,8 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
         body: JSON.stringify({
           status: rentUpdateForm.status,
           paidAmount: parseFloat(rentUpdateForm.paidAmount.toString()),
-          paidOn: rentUpdateForm.status === 'PAID' ? new Date().toISOString() : null,
+          paidOn: (rentUpdateForm.status === 'PAID' || rentUpdateForm.status === 'PARTIAL') && rentUpdateForm.paidOn ? new Date(rentUpdateForm.paidOn).toISOString() : null,
+          paymentMode: (rentUpdateForm.status === 'PAID' || rentUpdateForm.status === 'PARTIAL') ? rentUpdateForm.paymentMode : null,
           notes: rentUpdateForm.notes || null
         })
       })
@@ -611,42 +625,82 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
                 {tenant.rentRecords.length === 0 ? (
                   <p className="text-xs text-slate-400 font-semibold py-4 text-center">No rent billing records found.</p>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-xs md:text-sm">
-                      <thead>
-                        <tr className="border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                          <th className="pb-2">Billing Month</th>
-                          <th className="pb-2">Rent Due</th>
-                          <th className="pb-2">Paid Amount</th>
-                          <th className="pb-2">Status</th>
-                          <th className="pb-2 text-right">Update</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
-                        {tenant.rentRecords.map(rec => (
-                          <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
-                            <td className="py-3 font-bold text-slate-900">{MONTHS[rec.month - 1]} {rec.year}</td>
-                            <td className="py-3">₹{rec.rentAmount.toLocaleString()}</td>
-                            <td className="py-3 text-slate-800">₹{rec.paidAmount.toLocaleString()}</td>
-                            <td className="py-3">
-                              <Badge variant={rec.status === 'PAID' ? 'paid' : rec.status === 'PARTIAL' ? 'partial' : rec.status === 'OVERDUE' ? 'overdue' : 'pending'}>
-                                {rec.status}
-                              </Badge>
-                            </td>
-                            <td className="py-3 text-right">
-                              {tenant.status === 'ACTIVE' && (
-                                <button
-                                  onClick={() => handleOpenUpdateRentModal(rec)}
-                                  className="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded-lg transition-colors cursor-pointer"
-                                >
-                                  Update
-                                </button>
-                              )}
-                            </td>
+                  <div className="space-y-4">
+                    {/* Desktop Table */}
+                    <div className="hidden lg:block overflow-x-auto">
+                      <table className="w-full text-left border-collapse text-xs md:text-sm">
+                        <thead>
+                          <tr className="border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <th className="pb-2">Billing Month</th>
+                            <th className="pb-2">Rent Due</th>
+                            <th className="pb-2">Paid Amount</th>
+                            <th className="pb-2">Status</th>
+                            <th className="pb-2 text-right">Update</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+                          {tenant.rentRecords.map(rec => (
+                            <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
+                              <td className="py-3 font-bold text-slate-900">{MONTHS[rec.month - 1]} {rec.year}</td>
+                              <td className="py-3">₹{rec.rentAmount.toLocaleString()}</td>
+                              <td className="py-3 text-slate-800">₹{rec.paidAmount.toLocaleString()}</td>
+                              <td className="py-3">
+                                <Badge variant={rec.status === 'PAID' ? 'paid' : rec.status === 'PARTIAL' ? 'partial' : rec.status === 'OVERDUE' ? 'overdue' : 'pending'}>
+                                  {rec.status}
+                                </Badge>
+                              </td>
+                              <td className="py-3 text-right">
+                                {tenant.status === 'ACTIVE' && (
+                                  <button
+                                    onClick={() => handleOpenUpdateRentModal(rec)}
+                                    className="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded-lg transition-colors cursor-pointer"
+                                  >
+                                    Update
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mobile/Tablet Card List */}
+                    <div className="lg:hidden space-y-3">
+                      {tenant.rentRecords.map(rec => (
+                        <Card key={rec.id} className="p-4 space-y-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Billing Month</span>
+                              <span className="font-extrabold text-slate-900 text-sm">{MONTHS[rec.month - 1]} {rec.year}</span>
+                            </div>
+                            <Badge variant={rec.status === 'PAID' ? 'paid' : rec.status === 'PARTIAL' ? 'partial' : rec.status === 'OVERDUE' ? 'overdue' : 'pending'}>
+                              {rec.status}
+                            </Badge>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 border-t border-b border-slate-100 py-2.5 text-xs">
+                            <div>
+                              <span className="text-slate-400 block font-semibold text-[10px] uppercase tracking-wider">Rent Due</span>
+                              <span className="font-bold text-slate-800">₹{rec.rentAmount.toLocaleString()}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 block font-semibold text-[10px] uppercase tracking-wider">Paid Amount</span>
+                              <span className="font-bold text-slate-800">₹{rec.paidAmount.toLocaleString()}</span>
+                            </div>
+                          </div>
+
+                          {tenant.status === 'ACTIVE' && (
+                            <button
+                              onClick={() => handleOpenUpdateRentModal(rec)}
+                              className="w-full text-center text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-xl transition-colors cursor-pointer border border-slate-200"
+                            >
+                              Update Rent Record
+                            </button>
+                          )}
+                        </Card>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -694,48 +748,96 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
                 {tenant.waterRecords.length === 0 ? (
                   <p className="text-xs text-slate-400 font-semibold py-4 text-center">No water billing records found.</p>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-xs md:text-sm">
-                      <thead>
-                        <tr className="border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                          <th className="pb-2">Month</th>
-                          <th className="pb-2">Usage (L)</th>
-                          <th className="pb-2">Rate (₹/L)</th>
-                          <th className="pb-2">Total Due</th>
-                          <th className="pb-2">Status</th>
-                          <th className="pb-2 text-right">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
-                        {tenant.waterRecords.map(rec => (
-                          <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
-                            <td className="py-3 font-bold text-slate-900">{MONTHS[rec.month - 1]} {rec.year}</td>
-                            <td className="py-3">{rec.unitsConsumed.toLocaleString()} L</td>
-                            <td className="py-3">₹{rec.costPerLitre}</td>
-                            <td className="py-3 text-slate-900 font-bold">₹{rec.totalCost.toLocaleString()}</td>
-                            <td className="py-3">
-                              <Badge variant={rec.isPaid ? 'paid' : 'pending'}>
-                                {rec.isPaid ? 'PAID' : 'PENDING'}
-                              </Badge>
-                            </td>
-                            <td className="py-3 text-right">
-                              {tenant.status === 'ACTIVE' && (
-                                <button
-                                  onClick={() => handleWaterRecordStatusToggle(rec.id, rec.isPaid)}
-                                  className={`text-[10px] font-black px-2 py-1 rounded-lg transition-colors cursor-pointer border ${
-                                    rec.isPaid 
-                                      ? 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100' 
-                                      : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                                  }`}
-                                >
-                                  {rec.isPaid ? 'Mark Unpaid' : 'Mark Paid'}
-                                </button>
-                              )}
-                            </td>
+                  <div className="space-y-4">
+                    {/* Desktop Table */}
+                    <div className="hidden lg:block overflow-x-auto">
+                      <table className="w-full text-left border-collapse text-xs md:text-sm">
+                        <thead>
+                          <tr className="border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <th className="pb-2">Month</th>
+                            <th className="pb-2">Usage (L)</th>
+                            <th className="pb-2">Rate (₹/L)</th>
+                            <th className="pb-2">Total Due</th>
+                            <th className="pb-2">Status</th>
+                            <th className="pb-2 text-right">Action</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+                          {tenant.waterRecords.map(rec => (
+                            <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
+                              <td className="py-3 font-bold text-slate-900">{MONTHS[rec.month - 1]} {rec.year}</td>
+                              <td className="py-3">{rec.unitsConsumed.toLocaleString()} L</td>
+                              <td className="py-3">₹{rec.costPerLitre}</td>
+                              <td className="py-3 text-slate-900 font-bold">₹{rec.totalCost.toLocaleString()}</td>
+                              <td className="py-3">
+                                <Badge variant={rec.isPaid ? 'paid' : 'pending'}>
+                                  {rec.isPaid ? 'PAID' : 'PENDING'}
+                                </Badge>
+                              </td>
+                              <td className="py-3 text-right">
+                                {tenant.status === 'ACTIVE' && (
+                                  <button
+                                    onClick={() => handleWaterRecordStatusToggle(rec.id, rec.isPaid)}
+                                    className={`text-[10px] font-black px-2 py-1 rounded-lg transition-colors cursor-pointer border ${
+                                      rec.isPaid 
+                                        ? 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100' 
+                                        : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                    }`}
+                                  >
+                                    {rec.isPaid ? 'Mark Unpaid' : 'Mark Paid'}
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mobile/Tablet Card List */}
+                    <div className="lg:hidden space-y-3">
+                      {tenant.waterRecords.map(rec => (
+                        <Card key={rec.id} className="p-4 space-y-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Billing Month</span>
+                              <span className="font-extrabold text-slate-900 text-sm">{MONTHS[rec.month - 1]} {rec.year}</span>
+                            </div>
+                            <Badge variant={rec.isPaid ? 'paid' : 'pending'}>
+                              {rec.isPaid ? 'PAID' : 'PENDING'}
+                            </Badge>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-2 border-t border-b border-slate-100 py-2.5 text-xs text-center">
+                            <div className="text-left">
+                              <span className="text-slate-400 block font-semibold text-[10px] uppercase tracking-wider">Usage</span>
+                              <span className="font-bold text-slate-800">{rec.unitsConsumed.toLocaleString()} L</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 block font-semibold text-[10px] uppercase tracking-wider">Rate</span>
+                              <span className="font-bold text-slate-800">₹{rec.costPerLitre}/L</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-slate-400 block font-semibold text-[10px] uppercase tracking-wider">Total Due</span>
+                              <span className="font-extrabold text-slate-900">₹{rec.totalCost.toLocaleString()}</span>
+                            </div>
+                          </div>
+
+                          {tenant.status === 'ACTIVE' && (
+                            <button
+                              onClick={() => handleWaterRecordStatusToggle(rec.id, rec.isPaid)}
+                              className={`w-full text-center text-xs font-bold py-2 rounded-xl transition-colors cursor-pointer border ${
+                                rec.isPaid 
+                                  ? 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100' 
+                                  : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                              }`}
+                            >
+                              {rec.isPaid ? 'Mark Unpaid' : 'Mark Paid'}
+                            </button>
+                          )}
+                        </Card>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -896,6 +998,34 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
             value={rentUpdateForm.paidAmount || ''}
             onChange={(e) => setRentUpdateForm({ ...rentUpdateForm, paidAmount: parseFloat(e.target.value) || 0 })}
           />
+
+          {(rentUpdateForm.status === 'PAID' || rentUpdateForm.status === 'PARTIAL') && (
+            <div className="grid grid-cols-2 gap-3">
+              <Select
+                id="rentPayMode"
+                label="Payment Mode"
+                options={[
+                  { label: 'Cash', value: 'Cash' },
+                  { label: 'GPay', value: 'GPay' },
+                  { label: 'PhonePe', value: 'PhonePe' },
+                  { label: 'Paytm', value: 'Paytm' },
+                  { label: 'UPI / Net Banking', value: 'UPI/Net Banking' },
+                  { label: 'Cheque / Bank Transfer', value: 'Cheque/Bank Transfer' },
+                  { label: 'Other', value: 'Other' },
+                ]}
+                value={rentUpdateForm.paymentMode}
+                onChange={(e) => setRentUpdateForm({ ...rentUpdateForm, paymentMode: e.target.value })}
+              />
+
+              <Input
+                id="rentPayDate"
+                type="date"
+                label="Collection Date"
+                value={rentUpdateForm.paidOn}
+                onChange={(e) => setRentUpdateForm({ ...rentUpdateForm, paidOn: e.target.value })}
+              />
+            </div>
+          )}
 
           <Input
             id="rentNotes"

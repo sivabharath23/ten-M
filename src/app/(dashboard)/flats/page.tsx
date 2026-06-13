@@ -199,58 +199,115 @@ export default function FlatsPage() {
           onAction={handleOpenAddModal}
         />
       ) : (
-        <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs md:text-sm">
-              <thead>
-                <tr className="bg-slate-50/75 border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  <th className="px-5 py-3.5">Flat No.</th>
-                  <th className="px-5 py-3.5">Property</th>
-                  <th className="px-5 py-3.5">Floor</th>
-                  <th className="px-5 py-3.5">BHK / Type</th>
-                  <th className="px-5 py-3.5">Base Rent</th>
-                  <th className="px-5 py-3.5">Status</th>
-                  <th className="px-5 py-3.5">Tenant</th>
-                  <th className="px-5 py-3.5 text-right">Settings</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
-                {flats.map((flat) => {
-                  const tenantName = getActiveTenantName(flat)
-                  return (
-                    <tr key={flat.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-5 py-4 font-bold text-slate-900">{flat.flatNumber}</td>
-                      <td className="px-5 py-4 font-bold text-slate-800">{flat.property.name}</td>
-                      <td className="px-5 py-4">{flat.floor === 0 ? 'Ground' : `${flat.floor} Floor`}</td>
-                      <td className="px-5 py-4">{flat.bhkType}</td>
-                      <td className="px-5 py-4">₹{flat.baseRent.toLocaleString()}</td>
-                      <td className="px-5 py-4">
-                        <Badge variant={flat.status === 'OCCUPIED' ? 'occupied' : 'vacant'}>
-                          {flat.status}
-                        </Badge>
-                      </td>
-                      <td className="px-5 py-4">
-                        {tenantName ? (
-                          <span className="text-slate-800 font-bold">{tenantName}</span>
-                        ) : (
-                          <Link href={`/tenants/new?flatId=${flat.id}`} className="inline-flex items-center gap-1 text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded-lg transition-colors font-bold cursor-pointer">
-                            <Users className="h-3 w-3" />
-                            <span>Assign</span>
+        <div className="space-y-4">
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs md:text-sm">
+                <thead>
+                  <tr className="bg-slate-50/75 border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <th className="px-5 py-3.5">Flat No.</th>
+                    <th className="px-5 py-3.5">Property</th>
+                    <th className="px-5 py-3.5">Floor</th>
+                    <th className="px-5 py-3.5">BHK / Type</th>
+                    <th className="px-5 py-3.5">Base Rent</th>
+                    <th className="px-5 py-3.5">Status</th>
+                    <th className="px-5 py-3.5">Tenant</th>
+                    <th className="px-5 py-3.5 text-right">Settings</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+                  {flats.map((flat) => {
+                    const tenantName = getActiveTenantName(flat)
+                    return (
+                      <tr key={flat.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-5 py-4 font-bold text-slate-900">{flat.flatNumber}</td>
+                        <td className="px-5 py-4 font-bold text-slate-800">{flat.property.name}</td>
+                        <td className="px-5 py-4">{flat.floor === 0 ? 'Ground' : `${flat.floor} Floor`}</td>
+                        <td className="px-5 py-4">{flat.bhkType}</td>
+                        <td className="px-5 py-4">₹{flat.baseRent.toLocaleString()}</td>
+                        <td className="px-5 py-4">
+                          <Badge variant={flat.status === 'OCCUPIED' ? 'occupied' : 'vacant'}>
+                            {flat.status}
+                          </Badge>
+                        </td>
+                        <td className="px-5 py-4">
+                          {tenantName ? (
+                            <span className="text-slate-800 font-bold">{tenantName}</span>
+                          ) : (
+                            <Link href={`/tenants/new?flatId=${flat.id}`} className="inline-flex items-center gap-1 text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded-lg transition-colors font-bold cursor-pointer">
+                              <Users className="h-3 w-3" />
+                              <span>Assign</span>
+                            </Link>
+                          )}
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          <Link href={`/properties/${flat.propertyId}`}>
+                            <Button variant="outline" size="sm" className="px-2.5 py-1 text-[11px] font-bold text-slate-600">
+                              View Building
+                            </Button>
                           </Link>
-                        )}
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <Link href={`/properties/${flat.propertyId}`}>
-                          <Button variant="outline" size="sm" className="px-2.5 py-1 text-[11px] font-bold text-slate-600">
-                            View Building
-                          </Button>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile/Tablet Card View */}
+          <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {flats.map((flat) => {
+              const tenantName = getActiveTenantName(flat)
+              return (
+                <Card key={flat.id} className="hover:shadow-md transition-shadow duration-150 flex flex-col justify-between p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Flat Unit</span>
+                      <span className="font-extrabold text-slate-900 text-sm">{flat.flatNumber} · {flat.property.name}</span>
+                    </div>
+                    <Badge variant={flat.status === 'OCCUPIED' ? 'occupied' : 'vacant'}>
+                      {flat.status}
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-y-2.5 gap-x-4 border-t border-b border-slate-100 py-3 text-xs">
+                    <div>
+                      <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Floor</span>
+                      <span className="font-extrabold text-slate-800">{flat.floor === 0 ? 'Ground' : `${flat.floor} Floor`}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">BHK / Type</span>
+                      <span className="font-extrabold text-slate-800">{flat.bhkType}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Base Rent</span>
+                      <span className="font-extrabold text-slate-800">₹{flat.baseRent.toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Tenant</span>
+                      {tenantName ? (
+                        <span className="font-bold text-slate-800">{tenantName}</span>
+                      ) : (
+                        <Link href={`/tenants/new?flatId=${flat.id}`} className="inline-flex items-center gap-1 text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-0.5 rounded-lg transition-colors font-bold cursor-pointer border border-slate-200">
+                          <Users className="h-3 w-3 shrink-0" />
+                          <span>Assign</span>
                         </Link>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="pt-1">
+                    <Link href={`/properties/${flat.propertyId}`}>
+                      <Button variant="outline" size="sm" className="w-full justify-center text-xs font-bold text-slate-600 py-2">
+                        View Building
+                      </Button>
+                    </Link>
+                  </div>
+                </Card>
+              )
+            })}
           </div>
         </div>
       )}

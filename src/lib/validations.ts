@@ -67,5 +67,6 @@ export const rentRecordUpdateSchema = z.object({
   status: z.enum(['PENDING', 'PAID', 'PARTIAL', 'OVERDUE']),
   paidAmount: z.number().min(0, 'Paid amount must be 0 or higher'),
   paidOn: z.string().optional().nullable(),
+  paymentMode: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
 })

@@ -37,7 +37,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid fields' }, { status: 400 })
     }
 
-    const { status, paidAmount, paidOn, notes } = parsed.data
+    const { status, paidAmount, paidOn, paymentMode, notes } = parsed.data
 
     const updated = await prisma.rentRecord.update({
       where: { id },
@@ -45,6 +45,7 @@ export async function PUT(
         status,
         paidAmount,
         paidOn: paidOn ? new Date(paidOn) : null,
+        paymentMode,
         notes
       }
     })

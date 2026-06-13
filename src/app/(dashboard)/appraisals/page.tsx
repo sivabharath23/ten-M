@@ -158,42 +158,89 @@ export default function AppraisalsPage() {
             icon={<Sparkles className="h-10 w-10 text-brand-300" />}
           />
         ) : (
-          <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs md:text-sm">
-                <thead>
-                  <tr className="bg-slate-50/75 border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    <th className="px-5 py-3.5">Tenant Name</th>
-                    <th className="px-5 py-3.5">Flat No.</th>
-                    <th className="px-5 py-3.5">Building</th>
-                    <th className="px-5 py-3.5">Joining Date</th>
-                    <th className="px-5 py-3.5">Current Rent</th>
-                    <th className="px-5 py-3.5 text-right">Appraisal</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
-                  {dueTenants.map((tenant) => (
-                    <tr key={tenant.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-5 py-4 font-bold text-slate-900">{tenant.name}</td>
-                      <td className="px-5 py-4 font-bold text-slate-800">{tenant.flat.flatNumber}</td>
-                      <td className="px-5 py-4">{tenant.flat.property.name}</td>
-                      <td className="px-5 py-4">{new Date(tenant.joiningDate).toLocaleDateString()}</td>
-                      <td className="px-5 py-4">₹{tenant.currentRent.toLocaleString()}</td>
-                      <td className="px-5 py-4 text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="px-2.5 py-1 text-[11px] font-bold gap-1 text-slate-700 hover:text-brand-700"
-                          onClick={() => handleOpenHikeModal(tenant)}
-                        >
-                          <TrendingUp className="h-3.5 w-3.5" />
-                          <span>Hike Rent</span>
-                        </Button>
-                      </td>
+          <div className="space-y-4">
+            {/* Desktop Table View */}
+            <div className="hidden lg:block bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs md:text-sm">
+                  <thead>
+                    <tr className="bg-slate-50/75 border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      <th className="px-5 py-3.5">Tenant Name</th>
+                      <th className="px-5 py-3.5">Flat No.</th>
+                      <th className="px-5 py-3.5">Building</th>
+                      <th className="px-5 py-3.5">Joining Date</th>
+                      <th className="px-5 py-3.5">Current Rent</th>
+                      <th className="px-5 py-3.5 text-right">Appraisal</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+                    {dueTenants.map((tenant) => (
+                      <tr key={tenant.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-5 py-4 font-bold text-slate-900">{tenant.name}</td>
+                        <td className="px-5 py-4 font-bold text-slate-800">{tenant.flat.flatNumber}</td>
+                        <td className="px-5 py-4">{tenant.flat.property.name}</td>
+                        <td className="px-5 py-4">{new Date(tenant.joiningDate).toLocaleDateString()}</td>
+                        <td className="px-5 py-4">₹{tenant.currentRent.toLocaleString()}</td>
+                        <td className="px-5 py-4 text-right">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="px-2.5 py-1 text-[11px] font-bold gap-1 text-slate-700 hover:text-brand-700"
+                            onClick={() => handleOpenHikeModal(tenant)}
+                          >
+                            <TrendingUp className="h-3.5 w-3.5" />
+                            <span>Hike Rent</span>
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile/Tablet Card View */}
+            <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {dueTenants.map((tenant) => (
+                <Card key={tenant.id} className="hover:shadow-md transition-shadow duration-150 flex flex-col justify-between p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Tenant</span>
+                      <span className="font-extrabold text-slate-900 text-sm">{tenant.name}</span>
+                    </div>
+                    <span className="text-[10px] font-black text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
+                      DUE FOR HIKE
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-y-2.5 gap-x-4 border-t border-b border-slate-100 py-3 text-xs">
+                    <div>
+                      <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Flat Unit</span>
+                      <span className="font-extrabold text-slate-800">{tenant.flat.flatNumber} · {tenant.flat.property.name}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Joining Date</span>
+                      <span className="font-extrabold text-slate-800">{new Date(tenant.joiningDate).toLocaleDateString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Current Rent</span>
+                      <span className="font-extrabold text-slate-800">₹{tenant.currentRent.toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-center text-xs font-bold gap-1 py-2 text-slate-700 hover:text-brand-700"
+                      onClick={() => handleOpenHikeModal(tenant)}
+                    >
+                      <TrendingUp className="h-4 w-4" />
+                      <span>Hike Rent</span>
+                    </Button>
+                  </div>
+                </Card>
+              ))}
             </div>
           </div>
         )
@@ -206,34 +253,73 @@ export default function AppraisalsPage() {
             icon={<Award className="h-10 w-10 text-slate-300" />}
           />
         ) : (
-          <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs md:text-sm">
-                <thead>
-                  <tr className="bg-slate-50/75 border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    <th className="px-5 py-3.5">Tenant Name</th>
-                    <th className="px-5 py-3.5">Flat No.</th>
-                    <th className="px-5 py-3.5">Hike %</th>
-                    <th className="px-5 py-3.5">Old Rent</th>
-                    <th className="px-5 py-3.5">New Rent</th>
-                    <th className="px-5 py-3.5">Effective Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
-                  {pastRevisions.map((rev) => (
-                    <tr key={rev.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-5 py-4 font-bold text-slate-900">{rev.tenant.name}</td>
-                      <td className="px-5 py-4 font-bold text-slate-800">
-                        Flat {rev.tenant.flat.flatNumber} ({rev.tenant.flat.property.name})
-                      </td>
-                      <td className="px-5 py-4 text-brand-700 font-extrabold">+{rev.appraisalPercent}%</td>
-                      <td className="px-5 py-4 text-slate-500">₹{rev.previousRent.toLocaleString()}</td>
-                      <td className="px-5 py-4 text-slate-900 font-bold">₹{rev.newRent.toLocaleString()}</td>
-                      <td className="px-5 py-4 text-slate-400">{new Date(rev.effectiveDate).toLocaleDateString()}</td>
+          <div className="space-y-4">
+            {/* Desktop Table View */}
+            <div className="hidden lg:block bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs md:text-sm">
+                  <thead>
+                    <tr className="bg-slate-50/75 border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      <th className="px-5 py-3.5">Tenant Name</th>
+                      <th className="px-5 py-3.5">Flat No.</th>
+                      <th className="px-5 py-3.5">Hike %</th>
+                      <th className="px-5 py-3.5">Old Rent</th>
+                      <th className="px-5 py-3.5">New Rent</th>
+                      <th className="px-5 py-3.5">Effective Date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+                    {pastRevisions.map((rev) => (
+                      <tr key={rev.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-5 py-4 font-bold text-slate-900">{rev.tenant.name}</td>
+                        <td className="px-5 py-4 font-bold text-slate-800">
+                          Flat {rev.tenant.flat.flatNumber} ({rev.tenant.flat.property.name})
+                        </td>
+                        <td className="px-5 py-4 text-brand-700 font-extrabold">+{rev.appraisalPercent}%</td>
+                        <td className="px-5 py-4 text-slate-500">₹{rev.previousRent.toLocaleString()}</td>
+                        <td className="px-5 py-4 text-slate-900 font-bold">₹{rev.newRent.toLocaleString()}</td>
+                        <td className="px-5 py-4 text-slate-400">{new Date(rev.effectiveDate).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile/Tablet Card View */}
+            <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {pastRevisions.map((rev) => (
+                <Card key={rev.id} className="hover:shadow-md transition-shadow duration-150 flex flex-col justify-between p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Tenant</span>
+                      <span className="font-extrabold text-slate-900 text-sm">{rev.tenant.name}</span>
+                    </div>
+                    <span className="text-[10px] font-black text-brand-700 bg-brand-50 border border-brand-200 px-2 py-0.5 rounded-md">
+                      +{rev.appraisalPercent}% HIKE
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-y-2.5 gap-x-4 border-t border-slate-100 py-3 text-xs">
+                    <div>
+                      <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Flat Unit</span>
+                      <span className="font-extrabold text-slate-800">Flat {rev.tenant.flat.flatNumber} ({rev.tenant.flat.property.name})</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Effective Date</span>
+                      <span className="font-extrabold text-slate-800">{new Date(rev.effectiveDate).toLocaleDateString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Old Rent</span>
+                      <span className="font-bold text-slate-500">₹{rev.previousRent.toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">New Rent</span>
+                      <span className="font-extrabold text-slate-900">₹{rev.newRent.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </Card>
+              ))}
             </div>
           </div>
         )

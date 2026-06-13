@@ -267,52 +267,105 @@ export default function WaterBillingPage() {
           onAction={handleOpenAddModal}
         />
       ) : (
-        <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs md:text-sm">
-              <thead>
-                <tr className="bg-slate-50/75 border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  <th className="px-5 py-3.5">Flat No.</th>
-                  <th className="px-5 py-3.5">Tenant Name</th>
-                  <th className="px-5 py-3.5">Building</th>
-                  <th className="px-5 py-3.5">Usage (Litres)</th>
-                  <th className="px-5 py-3.5">Rate (₹/L)</th>
-                  <th className="px-5 py-3.5">Total Bill</th>
-                  <th className="px-5 py-3.5">Status</th>
-                  <th className="px-5 py-3.5 text-right">Settings</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
-                {waterRecords.map((rec) => (
-                  <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-5 py-4 font-bold text-slate-900">{rec.flat.flatNumber}</td>
-                    <td className="px-5 py-4 font-bold text-slate-800">{getActiveTenantName(rec)}</td>
-                    <td className="px-5 py-4">{rec.flat.property.name}</td>
-                    <td className="px-5 py-4">{rec.unitsConsumed.toLocaleString()} L</td>
-                    <td className="px-5 py-4">₹{rec.costPerLitre}</td>
-                    <td className="px-5 py-4 text-slate-900 font-bold">₹{rec.totalCost.toLocaleString()}</td>
-                    <td className="px-5 py-4">
-                      <Badge variant={rec.isPaid ? 'paid' : 'pending'}>
-                        {rec.isPaid ? 'PAID' : 'PENDING'}
-                      </Badge>
-                    </td>
-                    <td className="px-5 py-4 text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className={`px-2 py-1 text-[11px] font-bold gap-1 ${
-                          rec.isPaid ? 'text-slate-500 hover:text-slate-700' : 'text-emerald-600 hover:text-emerald-800'
-                        }`}
-                        onClick={() => handleTogglePayment(rec.id, rec.isPaid)}
-                      >
-                        <ToggleLeft className="h-3.5 w-3.5" />
-                        <span>{rec.isPaid ? 'Mark Unpaid' : 'Mark Paid'}</span>
-                      </Button>
-                    </td>
+        <div className="space-y-4">
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs md:text-sm">
+                <thead>
+                  <tr className="bg-slate-50/75 border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <th className="px-5 py-3.5">Flat No.</th>
+                    <th className="px-5 py-3.5">Tenant Name</th>
+                    <th className="px-5 py-3.5">Building</th>
+                    <th className="px-5 py-3.5">Usage (Litres)</th>
+                    <th className="px-5 py-3.5">Rate (₹/L)</th>
+                    <th className="px-5 py-3.5">Total Bill</th>
+                    <th className="px-5 py-3.5">Status</th>
+                    <th className="px-5 py-3.5 text-right">Settings</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+                  {waterRecords.map((rec) => (
+                    <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-5 py-4 font-bold text-slate-900">{rec.flat.flatNumber}</td>
+                      <td className="px-5 py-4 font-bold text-slate-800">{getActiveTenantName(rec)}</td>
+                      <td className="px-5 py-4">{rec.flat.property.name}</td>
+                      <td className="px-5 py-4">{rec.unitsConsumed.toLocaleString()} L</td>
+                      <td className="px-5 py-4">₹{rec.costPerLitre}</td>
+                      <td className="px-5 py-4 text-slate-900 font-bold">₹{rec.totalCost.toLocaleString()}</td>
+                      <td className="px-5 py-4">
+                        <Badge variant={rec.isPaid ? 'paid' : 'pending'}>
+                          {rec.isPaid ? 'PAID' : 'PENDING'}
+                        </Badge>
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className={`px-2 py-1 text-[11px] font-bold gap-1 ${
+                            rec.isPaid ? 'text-slate-500 hover:text-slate-700' : 'text-emerald-600 hover:text-emerald-800'
+                          }`}
+                          onClick={() => handleTogglePayment(rec.id, rec.isPaid)}
+                        >
+                          <ToggleLeft className="h-3.5 w-3.5" />
+                          <span>{rec.isPaid ? 'Mark Unpaid' : 'Mark Paid'}</span>
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile/Tablet Card View */}
+          <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {waterRecords.map((rec) => (
+              <Card key={rec.id} className="hover:shadow-md transition-shadow duration-150 flex flex-col justify-between p-4 space-y-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Flat Unit</span>
+                    <span className="font-extrabold text-slate-900 text-sm">{rec.flat.flatNumber} · {rec.flat.property.name}</span>
+                  </div>
+                  <Badge variant={rec.isPaid ? 'paid' : 'pending'}>
+                    {rec.isPaid ? 'PAID' : 'PENDING'}
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-2 gap-y-2 gap-x-4 border-t border-b border-slate-100 py-3 text-xs">
+                  <div>
+                    <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Tenant</span>
+                    <span className="font-extrabold text-slate-800">{getActiveTenantName(rec)}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Usage</span>
+                    <span className="font-extrabold text-slate-800">{rec.unitsConsumed.toLocaleString()} L</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Rate</span>
+                    <span className="font-bold text-slate-700">₹{rec.costPerLitre}/L</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Total Bill</span>
+                    <span className="font-black text-slate-900 text-sm">₹{rec.totalCost.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <div className="pt-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={`w-full justify-center text-xs font-bold gap-1 py-2 ${
+                      rec.isPaid ? 'text-slate-500 hover:text-slate-700' : 'text-emerald-600 hover:text-emerald-800'
+                    }`}
+                    onClick={() => handleTogglePayment(rec.id, rec.isPaid)}
+                  >
+                    <ToggleLeft className="h-4 w-4" />
+                    <span>{rec.isPaid ? 'Mark Unpaid' : 'Mark Paid'}</span>
+                  </Button>
+                </div>
+              </Card>
+            ))}
           </div>
         </div>
       )}

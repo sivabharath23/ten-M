@@ -25,6 +25,7 @@ interface RentRecord {
   paidAmount: number
   paidOn: string | null
   status: 'PENDING' | 'PAID' | 'PARTIAL' | 'OVERDUE'
+  paymentMode: string | null
   notes: string | null
   tenant: {
     name: string
@@ -68,9 +69,18 @@ export default function RentCollectionPage() {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState<RentRecord | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const getTodayDateString = () => {
+    const d = new Date()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${d.getFullYear()}-${month}-${day}`
+  }
+
   const [updateForm, setUpdateForm] = useState({
     status: 'PAID' as 'PENDING' | 'PAID' | 'PARTIAL' | 'OVERDUE',
     paidAmount: 0,
+    paidOn: '',
+    paymentMode: '',
     notes: ''
   })
 
@@ -133,9 +143,12 @@ export default function RentCollectionPage() {
 
   const handleOpenUpdateModal = (rec: RentRecord) => {
     setSelectedRecord(rec)
+    const recPaidOn = rec.paidOn ? new Date(rec.paidOn).toISOString().split('T')[0] : getTodayDateString()
     setUpdateForm({
       status: rec.status,
       paidAmount: rec.status === 'PAID' ? rec.rentAmount : rec.paidAmount || rec.rentAmount,
+      paidOn: recPaidOn,
+      paymentMode: rec.paymentMode || 'Cash',
       notes: rec.notes || ''
     })
     setIsUpdateModalOpen(true)
@@ -152,7 +165,8 @@ export default function RentCollectionPage() {
         body: JSON.stringify({
           status: updateForm.status,
           paidAmount: parseFloat(updateForm.paidAmount.toString()),
-          paidOn: updateForm.status === 'PAID' ? new Date().toISOString() : null,
+          paidOn: (updateForm.status === 'PAID' || updateForm.status === 'PARTIAL') && updateForm.paidOn ? new Date(updateForm.paidOn).toISOString() : null,
+          paymentMode: (updateForm.status === 'PAID' || updateForm.status === 'PARTIAL') ? updateForm.paymentMode : null,
           notes: updateForm.notes || null
         })
       })
@@ -245,48 +259,101 @@ export default function RentCollectionPage() {
           onAction={handleGenerateRecords}
         />
       ) : (
-        <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs md:text-sm">
-              <thead>
-                <tr className="bg-slate-50/75 border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  <th className="px-5 py-3.5">Flat No.</th>
-                  <th className="px-5 py-3.5">Tenant Name</th>
-                  <th className="px-5 py-3.5">Building</th>
-                  <th className="px-5 py-3.5">Rent Due</th>
-                  <th className="px-5 py-3.5">Collected</th>
-                  <th className="px-5 py-3.5">Status</th>
-                  <th className="px-5 py-3.5 text-right">Settings</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
-                {rentRecords.map((rec) => (
-                  <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-5 py-4 font-bold text-slate-900">{rec.flat.flatNumber}</td>
-                    <td className="px-5 py-4 font-bold text-slate-800">{rec.tenant.name}</td>
-                    <td className="px-5 py-4">{rec.flat.property.name}</td>
-                    <td className="px-5 py-4">₹{rec.rentAmount.toLocaleString()}</td>
-                    <td className="px-5 py-4 text-emerald-600">₹{rec.paidAmount.toLocaleString()}</td>
-                    <td className="px-5 py-4">
-                      <Badge variant={rec.status === 'PAID' ? 'paid' : rec.status === 'PARTIAL' ? 'partial' : rec.status === 'OVERDUE' ? 'overdue' : 'pending'}>
-                        {rec.status}
-                      </Badge>
-                    </td>
-                    <td className="px-5 py-4 text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="px-2 py-1 text-[11px] font-bold gap-1 text-slate-600"
-                        onClick={() => handleOpenUpdateModal(rec)}
-                      >
-                        <Edit3 className="h-3 w-3" />
-                        <span>Update</span>
-                      </Button>
-                    </td>
+        <div className="space-y-4">
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs md:text-sm">
+                <thead>
+                  <tr className="bg-slate-50/75 border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <th className="px-5 py-3.5">Flat No.</th>
+                    <th className="px-5 py-3.5">Tenant Name</th>
+                    <th className="px-5 py-3.5">Building</th>
+                    <th className="px-5 py-3.5">Rent Due</th>
+                    <th className="px-5 py-3.5">Collected</th>
+                    <th className="px-5 py-3.5">Status</th>
+                    <th className="px-5 py-3.5 text-right">Settings</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+                  {rentRecords.map((rec) => (
+                    <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-5 py-4 font-bold text-slate-900">{rec.flat.flatNumber}</td>
+                      <td className="px-5 py-4 font-bold text-slate-800">{rec.tenant.name}</td>
+                      <td className="px-5 py-4">{rec.flat.property.name}</td>
+                      <td className="px-5 py-4">₹{rec.rentAmount.toLocaleString()}</td>
+                      <td className="px-5 py-4 text-emerald-600">₹{rec.paidAmount.toLocaleString()}</td>
+                      <td className="px-5 py-4">
+                        <Badge variant={rec.status === 'PAID' ? 'paid' : rec.status === 'PARTIAL' ? 'partial' : rec.status === 'OVERDUE' ? 'overdue' : 'pending'}>
+                          {rec.status}
+                        </Badge>
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="px-2 py-1 text-[11px] font-bold gap-1 text-slate-600"
+                          onClick={() => handleOpenUpdateModal(rec)}
+                        >
+                          <Edit3 className="h-3 w-3" />
+                          <span>Update</span>
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile/Tablet Card View */}
+          <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {rentRecords.map((rec) => (
+              <Card key={rec.id} className="hover:shadow-md transition-shadow duration-150 flex flex-col justify-between p-4 space-y-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Flat Unit</span>
+                    <span className="font-extrabold text-slate-900 text-sm">{rec.flat.flatNumber} · {rec.flat.property.name}</span>
+                  </div>
+                  <Badge variant={rec.status === 'PAID' ? 'paid' : rec.status === 'PARTIAL' ? 'partial' : rec.status === 'OVERDUE' ? 'overdue' : 'pending'}>
+                    {rec.status}
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-2 gap-y-2.5 gap-x-4 border-t border-b border-slate-100 py-3 text-xs">
+                  <div>
+                    <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Tenant</span>
+                    <span className="font-extrabold text-slate-800">{rec.tenant.name}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Rent Due</span>
+                    <span className="font-extrabold text-slate-800">₹{rec.rentAmount.toLocaleString()}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Collected</span>
+                    <span className="font-extrabold text-emerald-600">₹{rec.paidAmount.toLocaleString()}</span>
+                  </div>
+                  {rec.notes && (
+                    <div className="col-span-2">
+                      <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Notes</span>
+                      <span className="text-slate-600 italic font-medium">{rec.notes}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-center text-xs font-bold gap-1 py-2 text-slate-600"
+                    onClick={() => handleOpenUpdateModal(rec)}
+                  >
+                    <Edit3 className="h-4 w-4" />
+                    <span>Update Collection</span>
+                  </Button>
+                </div>
+              </Card>
+            ))}
           </div>
         </div>
       )}
@@ -318,6 +385,34 @@ export default function RentCollectionPage() {
             value={updateForm.paidAmount || ''}
             onChange={(e) => setUpdateForm({ ...updateForm, paidAmount: parseFloat(e.target.value) || 0 })}
           />
+
+          {(updateForm.status === 'PAID' || updateForm.status === 'PARTIAL') && (
+            <div className="grid grid-cols-2 gap-3">
+              <Select
+                id="payMode"
+                label="Payment Mode"
+                options={[
+                  { label: 'Cash', value: 'Cash' },
+                  { label: 'GPay', value: 'GPay' },
+                  { label: 'PhonePe', value: 'PhonePe' },
+                  { label: 'Paytm', value: 'Paytm' },
+                  { label: 'UPI / Net Banking', value: 'UPI/Net Banking' },
+                  { label: 'Cheque / Bank Transfer', value: 'Cheque/Bank Transfer' },
+                  { label: 'Other', value: 'Other' },
+                ]}
+                value={updateForm.paymentMode}
+                onChange={(e) => setUpdateForm({ ...updateForm, paymentMode: e.target.value })}
+              />
+
+              <Input
+                id="payDate"
+                type="date"
+                label="Collection Date"
+                value={updateForm.paidOn}
+                onChange={(e) => setUpdateForm({ ...updateForm, paidOn: e.target.value })}
+              />
+            </div>
+          )}
 
           <Input
             id="payNotes"
