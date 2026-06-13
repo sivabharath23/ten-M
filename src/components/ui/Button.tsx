@@ -6,7 +6,11 @@ import {
   Plus,
   ArrowLeft,
   Trash2,
-  Check
+  Check,
+  Eye,
+  Download,
+  RefreshCw,
+  TrendingUp
 } from 'lucide-react'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -65,6 +69,14 @@ export function Button({
       autoIcon = <Trash2 className="h-3.5 w-3.5 shrink-0" />
     } else if (text.includes('confirm') || text.includes('sign in') || text.includes('log in') || text.includes('sign out') || text.includes('log out')) {
       autoIcon = <Check className="h-3.5 w-3.5 shrink-0" />
+    } else if (text.includes('view') || text.includes('inspect') || text.includes('preview') || text.includes('show')) {
+      autoIcon = <Eye className="h-3.5 w-3.5 shrink-0" />
+    } else if (text.includes('download') || text.includes('export')) {
+      autoIcon = <Download className="h-3.5 w-3.5 shrink-0" />
+    } else if (text.includes('sync') || text.includes('refresh') || text.includes('regenerate')) {
+      autoIcon = <RefreshCw className="h-3.5 w-3.5 shrink-0" />
+    } else if (text.includes('hike') || text.includes('raise') || text.includes('increase') || text.includes('appraisal')) {
+      autoIcon = <TrendingUp className="h-3.5 w-3.5 shrink-0" />
     }
   }
 

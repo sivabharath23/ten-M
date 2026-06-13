@@ -28,7 +28,9 @@ import {
   Upload,
   Eye,
   RefreshCw,
-  Edit
+  Edit,
+  ToggleLeft,
+  Edit3
 } from 'lucide-react'
 
 interface Property {
@@ -651,12 +653,15 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
                               </td>
                               <td className="py-3 text-right">
                                 {tenant.status === 'ACTIVE' && (
-                                  <button
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="px-2 py-1 text-[11px] font-bold gap-1 text-violet-600 border-violet-250/60 hover:bg-violet-50 hover:text-violet-700"
                                     onClick={() => handleOpenUpdateRentModal(rec)}
-                                    className="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded-lg transition-colors cursor-pointer"
                                   >
-                                    Update
-                                  </button>
+                                    <Edit3 className="h-3 w-3" />
+                                    <span>Update</span>
+                                  </Button>
                                 )}
                               </td>
                             </tr>
@@ -691,12 +696,15 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
                           </div>
 
                           {tenant.status === 'ACTIVE' && (
-                            <button
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full justify-center text-xs font-bold gap-1 py-2 text-violet-600 border-violet-250/60 hover:bg-violet-50 hover:text-violet-700"
                               onClick={() => handleOpenUpdateRentModal(rec)}
-                              className="w-full text-center text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-xl transition-colors cursor-pointer border border-slate-200"
                             >
-                              Update Rent Record
-                            </button>
+                              <Edit3 className="h-4 w-4" />
+                              <span>Update Rent Record</span>
+                            </Button>
                           )}
                         </Card>
                       ))}
@@ -776,16 +784,19 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
                               </td>
                               <td className="py-3 text-right">
                                 {tenant.status === 'ACTIVE' && (
-                                  <button
-                                    onClick={() => handleWaterRecordStatusToggle(rec.id, rec.isPaid)}
-                                    className={`text-[10px] font-black px-2 py-1 rounded-lg transition-colors cursor-pointer border ${
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className={`px-2 py-1 text-[10px] font-black gap-1 ${
                                       rec.isPaid 
-                                        ? 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100' 
-                                        : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                        ? 'text-slate-500 border-slate-200 hover:bg-slate-100' 
+                                        : 'text-emerald-600 border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700'
                                     }`}
+                                    onClick={() => handleWaterRecordStatusToggle(rec.id, rec.isPaid)}
                                   >
-                                    {rec.isPaid ? 'Mark Unpaid' : 'Mark Paid'}
-                                  </button>
+                                    <ToggleLeft className="h-3.5 w-3.5" />
+                                    <span>{rec.isPaid ? 'Mark Unpaid' : 'Mark Paid'}</span>
+                                  </Button>
                                 )}
                               </td>
                             </tr>
@@ -824,16 +835,17 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
                           </div>
 
                           {tenant.status === 'ACTIVE' && (
-                            <button
-                              onClick={() => handleWaterRecordStatusToggle(rec.id, rec.isPaid)}
-                              className={`w-full text-center text-xs font-bold py-2 rounded-xl transition-colors cursor-pointer border ${
-                                rec.isPaid 
-                                  ? 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100' 
-                                  : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className={`w-full justify-center text-xs font-bold gap-1 py-2 ${
+                                rec.isPaid ? 'text-slate-500 hover:text-slate-700' : 'text-emerald-600 hover:text-emerald-800'
                               }`}
+                              onClick={() => handleWaterRecordStatusToggle(rec.id, rec.isPaid)}
                             >
-                              {rec.isPaid ? 'Mark Unpaid' : 'Mark Paid'}
-                            </button>
+                              <ToggleLeft className="h-4 w-4" />
+                              <span>{rec.isPaid ? 'Mark Unpaid' : 'Mark Paid'}</span>
+                            </Button>
                           )}
                         </Card>
                       ))}
