@@ -384,7 +384,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
     setSelectedRentRecord(record)
     const recPaidOn = record.paidOn ? new Date(record.paidOn).toISOString().split('T')[0] : getTodayDateString()
     setRentUpdateForm({
-      status: record.status,
+      status: record.status === 'PENDING' || record.status === 'OVERDUE' ? 'PAID' : record.status,
       paidAmount: record.status === 'PAID' ? record.rentAmount : record.paidAmount || record.rentAmount,
       paidOn: recPaidOn,
       paymentMode: record.paymentMode || 'Cash',

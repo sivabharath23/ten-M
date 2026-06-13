@@ -161,7 +161,7 @@ export default function RentCollectionPage() {
     setSelectedRecord(rec)
     const recPaidOn = rec.paidOn ? new Date(rec.paidOn).toISOString().split('T')[0] : getTodayDateString()
     setUpdateForm({
-      status: rec.status,
+      status: rec.status === 'PENDING' || rec.status === 'OVERDUE' ? 'PAID' : rec.status,
       paidAmount: rec.status === 'PAID' ? rec.rentAmount : rec.paidAmount || rec.rentAmount,
       paidOn: recPaidOn,
       paymentMode: rec.paymentMode || 'Cash',
