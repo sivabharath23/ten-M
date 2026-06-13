@@ -64,6 +64,21 @@ input, select, textarea {
   font-size: 16px !important;
 }
 
+/* Fix Safari / iOS native date input style issues */
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 42px;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
 /* Smooth transitions */
 .page-transition-enter {
   opacity: 0;
