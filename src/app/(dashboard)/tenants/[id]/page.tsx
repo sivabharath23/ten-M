@@ -518,7 +518,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
             {/* Quick Actions Panel */}
             {tenant.status === 'ACTIVE' ? (
               <div className="flex flex-col gap-2 pt-2">
-                <Button onClick={handleOpenEditModal} variant="outline" size="sm" className="w-full text-xs font-bold gap-1 text-slate-700">
+                <Button onClick={handleOpenEditModal} variant="outline" size="sm" className="w-full text-xs font-bold gap-1 text-violet-600 border-violet-200 hover:bg-violet-50 hover:text-violet-700">
                   <Edit className="h-3.5 w-3.5" />
                   <span>Edit Tenant Details</span>
                 </Button>
@@ -537,7 +537,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
               </div>
             ) : (
               <div className="flex flex-col gap-2 pt-2">
-                <Button onClick={handleOpenEditModal} variant="outline" size="sm" className="w-full text-xs font-bold gap-1 text-slate-700">
+                <Button onClick={handleOpenEditModal} variant="outline" size="sm" className="w-full text-xs font-bold gap-1 text-violet-600 border-violet-200 hover:bg-violet-50 hover:text-violet-700">
                   <Edit className="h-3.5 w-3.5" />
                   <span>Edit Tenant Details</span>
                 </Button>
@@ -566,7 +566,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
                     <span>Replace Document</span>
                     <input type="file" accept="image/*" className="hidden" onChange={handleDocumentUpload} />
                   </label>
-                  <Button variant="outline" size="sm" onClick={() => setIsViewDocOpen(true)} className="px-3 text-[11px]">
+                  <Button variant="outline" size="sm" onClick={() => setIsViewDocOpen(true)} className="px-3 text-[11px] text-emerald-600 border-emerald-250/60 hover:bg-emerald-50 hover:text-emerald-700">
                     <Eye className="h-3.5 w-3.5" />
                     <span>View</span>
                   </Button>

@@ -243,7 +243,7 @@ export default function FlatsPage() {
                         </td>
                         <td className="px-5 py-4 text-right">
                           <Link href={`/properties/${flat.propertyId}`}>
-                            <Button variant="outline" size="sm" className="px-2.5 py-1 text-[11px] font-bold text-slate-600">
+                            <Button variant="outline" size="sm" className="px-2.5 py-1 text-[11px] font-bold text-emerald-600 border-emerald-250/60 hover:bg-emerald-50 hover:text-emerald-700">
                               View Building
                             </Button>
                           </Link>
@@ -300,7 +300,7 @@ export default function FlatsPage() {
 
                   <div className="pt-1">
                     <Link href={`/properties/${flat.propertyId}`}>
-                      <Button variant="outline" size="sm" className="w-full justify-center text-xs font-bold text-slate-600 py-2">
+                      <Button variant="outline" size="sm" className="w-full justify-center text-xs font-bold text-emerald-600 border-emerald-250/60 hover:bg-emerald-50 hover:text-emerald-700 py-2">
                         View Building
                       </Button>
                     </Link>

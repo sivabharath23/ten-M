@@ -308,7 +308,7 @@ export default function RentCollectionPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="px-2 py-1 text-[11px] font-bold gap-1 text-slate-600"
+                          className="px-2 py-1 text-[11px] font-bold gap-1 text-violet-600 border-violet-250/60 hover:bg-violet-50 hover:text-violet-700"
                           onClick={() => handleOpenUpdateModal(rec)}
                         >
                           <Edit3 className="h-3 w-3" />
@@ -361,7 +361,7 @@ export default function RentCollectionPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full justify-center text-xs font-bold gap-1 py-2 text-slate-600"
+                    className="w-full justify-center text-xs font-bold gap-1 py-2 text-violet-600 border-violet-250/60 hover:bg-violet-50 hover:text-violet-700"
                     onClick={() => handleOpenUpdateModal(rec)}
                   >
                     <Edit3 className="h-4 w-4" />

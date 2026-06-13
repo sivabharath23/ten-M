@@ -211,7 +211,7 @@ export default function PropertiesPage() {
               {/* Action Footers */}
               <div className="flex items-center justify-between border-t border-slate-100 mt-4 pt-3 gap-2">
                 <Link href={`/properties/${prop.id}`} className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full text-xs font-bold gap-1 text-slate-700">
+                  <Button variant="outline" size="sm" className="w-full text-xs font-bold gap-1 text-emerald-600 border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
                     <Eye className="h-3.5 w-3.5" />
                     <span>View Units</span>
                   </Button>
@@ -220,7 +220,7 @@ export default function PropertiesPage() {
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="p-2 h-auto text-slate-500" 
+                    className="p-2 h-auto text-violet-600 hover:text-violet-700 hover:bg-violet-50" 
                     onClick={() => handleOpenEditModal(prop)}
                     title="Edit"
                   >

@@ -258,7 +258,7 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              className="p-1.5 h-auto text-slate-400 hover:text-slate-600 inline-flex"
+                              className="p-1.5 h-auto text-violet-500 hover:text-violet-700 hover:bg-violet-50 inline-flex"
                               onClick={() => handleOpenEditModal(flat)}
                               title="Edit Unit"
                             >

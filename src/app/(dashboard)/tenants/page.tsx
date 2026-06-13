@@ -316,7 +316,7 @@ export default function TenantsPage() {
                   </div>
 
                   <Link href={`/tenants/${tenant.id}`}>
-                    <Button variant="outline" size="sm" className="text-xs font-bold px-3">
+                    <Button variant="outline" size="sm" className="text-xs font-bold px-3 text-emerald-600 border-emerald-250/60 hover:bg-emerald-50 hover:text-emerald-700">
                       View Ledger
                     </Button>
                   </Link>
