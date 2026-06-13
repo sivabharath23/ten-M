@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { toast } from 'sonner'
 import { Banknote, RefreshCw, Calendar, Edit3, Building2 } from 'lucide-react'
 
@@ -64,6 +65,7 @@ export default function RentCollectionPage() {
   const [rentRecords, setRentRecords] = useState<RentRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isConfirmGenerateOpen, setIsConfirmGenerateOpen] = useState(false)
   
   // Update Modal State
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
@@ -74,6 +76,15 @@ export default function RentCollectionPage() {
     const month = String(d.getMonth() + 1).padStart(2, '0')
     const day = String(d.getDate()).padStart(2, '0')
     return `${d.getFullYear()}-${month}-${day}`
+  }
+
+  const getSelectedMonthName = () => {
+    return MONTHS_LIST.find(m => m.value === selectedMonth)?.label || ''
+  }
+
+  const getSelectedPropertyName = () => {
+    if (selectedPropertyId === 'all') return 'all properties'
+    return properties.find(p => p.id === selectedPropertyId)?.name || 'selected property'
   }
 
   const [updateForm, setUpdateForm] = useState({
@@ -141,6 +152,11 @@ export default function RentCollectionPage() {
     }
   }
 
+  const handleConfirmGenerate = async () => {
+    setIsConfirmGenerateOpen(false)
+    await handleGenerateRecords()
+  }
+
   const handleOpenUpdateModal = (rec: RentRecord) => {
     setSelectedRecord(rec)
     const recPaidOn = rec.paidOn ? new Date(rec.paidOn).toISOString().split('T')[0] : getTodayDateString()
@@ -196,7 +212,7 @@ export default function RentCollectionPage() {
         
         {/* Bulk generation button */}
         <Button 
-          onClick={handleGenerateRecords} 
+          onClick={() => setIsConfirmGenerateOpen(true)} 
           isLoading={isGenerating} 
           variant="primary" 
           className="shadow-md shadow-brand-500/10 gap-1.5 text-xs font-bold px-3.5 self-start sm:self-auto"
@@ -256,7 +272,7 @@ export default function RentCollectionPage() {
           description="We couldn't locate rent bills for the selected date and property filters. Click the button above to generate bills for active tenants."
           icon={<Banknote className="h-10 w-10 text-slate-300" />}
           actionLabel="Generate Rent Bills"
-          onAction={handleGenerateRecords}
+          onAction={() => setIsConfirmGenerateOpen(true)}
         />
       ) : (
         <div className="space-y-4">
@@ -432,6 +448,18 @@ export default function RentCollectionPage() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmModal
+        isOpen={isConfirmGenerateOpen}
+        onClose={() => setIsConfirmGenerateOpen(false)}
+        onConfirm={handleConfirmGenerate}
+        title="Generate Month's Bills"
+        message={`Are you sure you want to generate bill for ${getSelectedMonthName()} ${selectedYear} and ${getSelectedPropertyName()}?`}
+        confirmText="Generate"
+        cancelText="Cancel"
+        type="info"
+        isLoading={isGenerating}
+      />
     </div>
   )
 }

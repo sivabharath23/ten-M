@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { toast } from 'sonner'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import Link from 'next/link'
 import {
   DollarSign,
@@ -57,10 +58,16 @@ interface DashboardData {
   activities: Activity[]
 }
 
+const MONTHS_LIST = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+]
+
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isConfirmGenerateOpen, setIsConfirmGenerateOpen] = useState(false)
 
   const fetchDashboardData = async () => {
     setIsLoading(true)
@@ -108,6 +115,11 @@ export default function DashboardPage() {
     }
   }
 
+  const handleConfirmGenerate = async () => {
+    setIsConfirmGenerateOpen(false)
+    await handleQuickGenerate()
+  }
+
   if (isLoading || !data) {
     return (
       <div className="space-y-6">
@@ -147,7 +159,7 @@ export default function DashboardPage() {
           <p className="text-xs text-brand-100 font-semibold mt-0.5">Welcome back to your Tenant Management System</p>
         </div>
         <Button
-          onClick={handleQuickGenerate}
+          onClick={() => setIsConfirmGenerateOpen(true)}
           isLoading={isGenerating}
           variant="outline"
           className="text-xs font-bold bg-white/10 hover:bg-white/20 border-white/20 text-white gap-1.5 self-start sm:self-auto cursor-pointer"
@@ -375,6 +387,18 @@ export default function DashboardPage() {
           </div>
         </Card>
       </div>
+
+      <ConfirmModal
+        isOpen={isConfirmGenerateOpen}
+        onClose={() => setIsConfirmGenerateOpen(false)}
+        onConfirm={handleConfirmGenerate}
+        title="Sync Month's Bills"
+        message={`Are you sure you want to generate bill for ${MONTHS_LIST[new Date().getMonth()]} ${new Date().getFullYear()} and all properties?`}
+        confirmText="Generate"
+        cancelText="Cancel"
+        type="info"
+        isLoading={isGenerating}
+      />
     </div>
   )
 }
