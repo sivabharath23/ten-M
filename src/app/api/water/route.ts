@@ -115,3 +115,48 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  const user = await getCurrentUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  try {
+    const { ids } = await req.json()
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json({ error: 'Invalid or empty ids' }, { status: 400 })
+    }
+
+    // Check ownership of all requested water record IDs
+    const records = await prisma.waterRecord.findMany({
+      where: {
+        id: { in: ids }
+      },
+      include: {
+        flat: {
+          include: {
+            property: {
+              select: { userId: true }
+            }
+          }
+        }
+      }
+    })
+
+    const allOwned = records.every(rec => rec.flat.property.userId === user.userId)
+    if (!allOwned || records.length !== ids.length) {
+      return NextResponse.json({ error: 'Unauthorized or invalid records' }, { status: 403 })
+    }
+
+    await prisma.waterRecord.deleteMany({
+      where: {
+        id: { in: ids }
+      }
+    })
+
+    return NextResponse.json({ success: true, deleted: ids.length })
+  } catch (error) {
+    console.error('Bulk delete water records error:', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  }
+}
+

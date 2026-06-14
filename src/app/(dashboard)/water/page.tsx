@@ -13,7 +13,8 @@ import { Modal } from '@/components/ui/Modal'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { toast } from 'sonner'
-import { Droplets, Plus, Calendar, ToggleLeft } from 'lucide-react'
+import { Droplets, Plus, Calendar, ToggleLeft, Trash2 } from 'lucide-react'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 
 type WaterFormInputs = typeof waterRecordSchema._output
 
@@ -77,6 +78,16 @@ export default function WaterBillingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [modalPropertyId, setModalPropertyId] = useState<string>('')
 
+  // Delete States
+  const [isDeleteWaterOpen, setIsDeleteWaterOpen] = useState(false)
+  const [waterToDelete, setWaterToDelete] = useState<WaterRecord | null>(null)
+  const [isDeletingWater, setIsDeletingWater] = useState(false)
+
+  // Multi-select / Bulk Delete States
+  const [selectedWaterIds, setSelectedWaterIds] = useState<string[]>([])
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false)
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
+
   const {
     register,
     handleSubmit,
@@ -117,6 +128,7 @@ export default function WaterBillingPage() {
         )
       }
       setWaterRecords(logsData)
+      setSelectedWaterIds([])
     } catch {
       toast.error('Could not fetch water usage details')
     } finally {
@@ -197,6 +209,65 @@ export default function WaterBillingPage() {
     }
   }
 
+  const handleDeleteWaterClick = (rec: WaterRecord) => {
+    setWaterToDelete(rec)
+    setIsDeleteWaterOpen(true)
+  }
+
+  const handleConfirmDeleteWater = async () => {
+    if (!waterToDelete) return
+    setIsDeletingWater(true)
+    try {
+      const response = await fetch(`/api/water/${waterToDelete.id}`, {
+        method: 'DELETE'
+      })
+      if (!response.ok) throw new Error()
+      toast.success('Water usage log deleted successfully')
+      setIsDeleteWaterOpen(false)
+      setWaterToDelete(null)
+      fetchWaterDetails()
+    } catch {
+      toast.error('Could not delete water usage log')
+    } finally {
+      setIsDeletingWater(false)
+    }
+  }
+
+  const handleSelectWater = (id: string) => {
+    setSelectedWaterIds(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    )
+  }
+
+  const handleSelectAll = () => {
+    if (selectedWaterIds.length === waterRecords.length) {
+      setSelectedWaterIds([])
+    } else {
+      setSelectedWaterIds(waterRecords.map(rec => rec.id))
+    }
+  }
+
+  const handleConfirmBulkDelete = async () => {
+    if (selectedWaterIds.length === 0) return
+    setIsBulkDeleting(true)
+    try {
+      const response = await fetch('/api/water', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedWaterIds })
+      })
+      if (!response.ok) throw new Error()
+      toast.success(`Successfully deleted ${selectedWaterIds.length} water logs!`)
+      setSelectedWaterIds([])
+      setIsBulkDeleteOpen(false)
+      fetchWaterDetails()
+    } catch {
+      toast.error('Could not delete selected water usage logs')
+    } finally {
+      setIsBulkDeleting(false)
+    }
+  }
+
   const getActiveTenantName = (rec: WaterRecord) => {
     return rec.flat.tenants?.[0]?.name || 'No tenant'
   }
@@ -273,12 +344,53 @@ export default function WaterBillingPage() {
         />
       ) : (
         <div className="space-y-4">
+          {/* Bulk Action Bar */}
+          {selectedWaterIds.length > 0 && (
+            <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex items-center justify-between shadow-sm animate-fade-in">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black text-rose-800 uppercase tracking-wider">
+                  Bulk Actions:
+                </span>
+                <span className="text-xs font-bold text-rose-700">
+                  {selectedWaterIds.length} water log{selectedWaterIds.length > 1 ? 's' : ''} selected
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs font-bold px-3 py-1.5 text-slate-600 border-slate-200 hover:bg-slate-50 cursor-pointer"
+                  onClick={() => setSelectedWaterIds([])}
+                >
+                  Clear Selection
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  className="text-xs font-bold px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white shadow-sm gap-1.5 cursor-pointer"
+                  onClick={() => setIsBulkDeleteOpen(true)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>Delete Selected</span>
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Desktop Table View */}
           <div className="hidden lg:block bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs md:text-sm">
                 <thead>
                   <tr className="bg-slate-50/75 border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <th className="px-5 py-3.5 w-10">
+                      <input 
+                        type="checkbox"
+                        checked={waterRecords.length > 0 && selectedWaterIds.length === waterRecords.length}
+                        onChange={handleSelectAll}
+                        className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer h-4 w-4"
+                      />
+                    </th>
                     <th className="px-5 py-3.5">Flat No.</th>
                     <th className="px-5 py-3.5">Tenant Name</th>
                     <th className="px-5 py-3.5">Building</th>
@@ -292,6 +404,14 @@ export default function WaterBillingPage() {
                 <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
                   {waterRecords.map((rec) => (
                     <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-5 py-4">
+                        <input 
+                          type="checkbox"
+                          checked={selectedWaterIds.includes(rec.id)}
+                          onChange={() => handleSelectWater(rec.id)}
+                          className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer h-4 w-4"
+                        />
+                      </td>
                       <td className="px-5 py-4 font-bold text-slate-900">{rec.flat.flatNumber}</td>
                       <td className="px-5 py-4 font-bold text-slate-800">{getActiveTenantName(rec)}</td>
                       <td className="px-5 py-4">{rec.flat.property.name}</td>
@@ -304,17 +424,28 @@ export default function WaterBillingPage() {
                         </Badge>
                       </td>
                       <td className="px-5 py-4 text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className={`px-2 py-1 text-[11px] font-bold gap-1 ${
-                            rec.isPaid ? 'text-slate-500 hover:text-slate-700' : 'text-emerald-600 hover:text-emerald-800'
-                          }`}
-                          onClick={() => handleTogglePayment(rec.id, rec.isPaid)}
-                        >
-                          <ToggleLeft className="h-3.5 w-3.5" />
-                          <span>{rec.isPaid ? 'Mark Unpaid' : 'Mark Paid'}</span>
-                        </Button>
+                        <div className="flex justify-end gap-1.5">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className={`px-2 py-1 text-[11px] font-bold gap-1 ${
+                              rec.isPaid ? 'text-slate-500 hover:text-slate-700' : 'text-emerald-600 hover:text-emerald-800'
+                            }`}
+                            onClick={() => handleTogglePayment(rec.id, rec.isPaid)}
+                          >
+                            <ToggleLeft className="h-3.5 w-3.5" />
+                            <span>{rec.isPaid ? 'Mark Unpaid' : 'Mark Paid'}</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="p-1 text-rose-600 border-rose-200/60 hover:bg-rose-50 hover:text-rose-700 cursor-pointer"
+                            onClick={() => handleDeleteWaterClick(rec)}
+                            title="Delete Water Record"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -324,13 +455,34 @@ export default function WaterBillingPage() {
           </div>
 
           {/* Mobile/Tablet Card View */}
+          <div className="lg:hidden flex justify-between items-center mb-3">
+            <span className="text-xs font-black text-slate-400 uppercase tracking-wider">
+              Records List
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-[11px] font-bold px-2 py-1 gap-1 text-slate-600 border-slate-200 hover:bg-slate-50 cursor-pointer"
+              onClick={handleSelectAll}
+            >
+              {selectedWaterIds.length === waterRecords.length ? 'Deselect All' : 'Select All'}
+            </Button>
+          </div>
           <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
             {waterRecords.map((rec) => (
               <Card key={rec.id} className="hover:shadow-md transition-shadow duration-150 flex flex-col justify-between p-4 space-y-3">
                 <div className="flex justify-between items-start">
-                  <div>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Flat Unit</span>
-                    <span className="font-extrabold text-slate-900 text-sm">{rec.flat.flatNumber} · {rec.flat.property.name}</span>
+                  <div className="flex items-start gap-3">
+                    <input 
+                      type="checkbox"
+                      checked={selectedWaterIds.includes(rec.id)}
+                      onChange={() => handleSelectWater(rec.id)}
+                      className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer h-4 w-4 mt-1"
+                    />
+                    <div>
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Flat Unit</span>
+                      <span className="font-extrabold text-slate-900 text-sm">{rec.flat.flatNumber} · {rec.flat.property.name}</span>
+                    </div>
                   </div>
                   <Badge variant={rec.isPaid ? 'paid' : 'pending'}>
                     {rec.isPaid ? 'PAID' : 'PENDING'}
@@ -356,17 +508,26 @@ export default function WaterBillingPage() {
                   </div>
                 </div>
 
-                <div className="pt-1">
+                <div className="pt-1 flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    className={`w-full justify-center text-xs font-bold gap-1 py-2 ${
+                    className={`flex-1 justify-center text-xs font-bold gap-1 py-2 ${
                       rec.isPaid ? 'text-slate-500 hover:text-slate-700' : 'text-emerald-600 hover:text-emerald-800'
                     }`}
                     onClick={() => handleTogglePayment(rec.id, rec.isPaid)}
                   >
                     <ToggleLeft className="h-4 w-4" />
                     <span>{rec.isPaid ? 'Mark Unpaid' : 'Mark Paid'}</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700 py-2 px-3 cursor-pointer"
+                    onClick={() => handleDeleteWaterClick(rec)}
+                    title="Delete Water Record"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </Card>
@@ -441,6 +602,33 @@ export default function WaterBillingPage() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmModal
+        isOpen={isDeleteWaterOpen}
+        onClose={() => {
+          setIsDeleteWaterOpen(false)
+          setWaterToDelete(null)
+        }}
+        onConfirm={handleConfirmDeleteWater}
+        title="Delete Water Bill Record"
+        message={waterToDelete ? `Are you sure you want to permanently delete the water usage bill log for Flat ${waterToDelete.flat.flatNumber} (${getActiveTenantName(waterToDelete)}) for ${MONTHS_LIST.find(m => m.value === waterToDelete.month)?.label || ''} ${waterToDelete.year}?` : ''}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+        isLoading={isDeletingWater}
+      />
+
+      <ConfirmModal
+        isOpen={isBulkDeleteOpen}
+        onClose={() => setIsBulkDeleteOpen(false)}
+        onConfirm={handleConfirmBulkDelete}
+        title="Delete Selected Water Bill Records"
+        message={`Are you sure you want to permanently delete the ${selectedWaterIds.length} selected water bill logs? This action cannot be undone.`}
+        confirmText="Delete Selected"
+        cancelText="Cancel"
+        type="danger"
+        isLoading={isBulkDeleting}
+      />
     </div>
   )
 }
