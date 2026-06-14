@@ -60,13 +60,13 @@ export default function RentCollectionPage() {
   const [selectedMonth, setSelectedMonth] = useState<number>(currentDate.getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState<number>(currentDate.getFullYear())
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>('all')
-  
+
   const [properties, setProperties] = useState<Property[]>([])
   const [rentRecords, setRentRecords] = useState<RentRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isConfirmGenerateOpen, setIsConfirmGenerateOpen] = useState(false)
-  
+
   // Update Modal State
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState<RentRecord | null>(null)
@@ -155,10 +155,10 @@ export default function RentCollectionPage() {
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Failed to generate billing records')
-      
+
       toast.success(
-        data.generated > 0 
-          ? `Successfully generated ${data.generated} new rent records for this month!` 
+        data.generated > 0
+          ? `Successfully generated ${data.generated} new rent records for this month!`
           : 'Billing records are already generated and up to date for this month.'
       )
       fetchPropertiesAndRecords()
@@ -239,7 +239,7 @@ export default function RentCollectionPage() {
   }
 
   const handleSelectRent = (id: string) => {
-    setSelectedRentIds(prev => 
+    setSelectedRentIds(prev =>
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     )
   }
@@ -285,12 +285,12 @@ export default function RentCollectionPage() {
           <h2 className="text-xl font-black text-slate-800 tracking-tight">Rent Collection</h2>
           <p className="text-xs font-semibold text-slate-400">Record, update, and generate monthly tenant rent charges</p>
         </div>
-        
+
         {/* Bulk generation button */}
-        <Button 
-          onClick={() => setIsConfirmGenerateOpen(true)} 
-          isLoading={isGenerating} 
-          variant="primary" 
+        <Button
+          onClick={() => setIsConfirmGenerateOpen(true)}
+          isLoading={isGenerating}
+          variant="primary"
           className="shadow-md shadow-brand-500/10 gap-1.5 text-xs font-bold px-3.5 self-start sm:self-auto"
         >
           <RefreshCw className="h-4 w-4" />
@@ -299,7 +299,7 @@ export default function RentCollectionPage() {
       </div>
 
       {/* Query Filters */}
-      <Card className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <Card className="p-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
         <div>
           <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">
             Billing Month
@@ -392,7 +392,7 @@ export default function RentCollectionPage() {
                 <thead>
                   <tr className="bg-slate-50/75 border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                     <th className="px-5 py-3.5 w-10">
-                      <input 
+                      <input
                         type="checkbox"
                         checked={rentRecords.length > 0 && selectedRentIds.length === rentRecords.length}
                         onChange={handleSelectAll}
@@ -412,7 +412,7 @@ export default function RentCollectionPage() {
                   {rentRecords.map((rec) => (
                     <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-5 py-4">
-                        <input 
+                        <input
                           type="checkbox"
                           checked={selectedRentIds.includes(rec.id)}
                           onChange={() => handleSelectRent(rec.id)}
@@ -477,7 +477,7 @@ export default function RentCollectionPage() {
               <Card key={rec.id} className="hover:shadow-md transition-shadow duration-150 flex flex-col justify-between p-4 space-y-3">
                 <div className="flex justify-between items-start">
                   <div className="flex items-start gap-3">
-                    <input 
+                    <input
                       type="checkbox"
                       checked={selectedRentIds.includes(rec.id)}
                       onChange={() => handleSelectRent(rec.id)}
