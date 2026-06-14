@@ -77,6 +77,11 @@ export default function RentCollectionPage() {
   const [rentToDelete, setRentToDelete] = useState<RentRecord | null>(null)
   const [isDeletingRent, setIsDeletingRent] = useState(false)
 
+  // Multi-select / Bulk Delete State
+  const [selectedRentIds, setSelectedRentIds] = useState<string[]>([])
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false)
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
+
   const getTodayDateString = () => {
     const d = new Date()
     const month = String(d.getMonth() + 1).padStart(2, '0')
@@ -128,6 +133,7 @@ export default function RentCollectionPage() {
         )
       }
       setRentRecords(data)
+      setSelectedRentIds([])
     } catch {
       toast.error('Could not load rent collection details')
     } finally {
@@ -232,6 +238,41 @@ export default function RentCollectionPage() {
     }
   }
 
+  const handleSelectRent = (id: string) => {
+    setSelectedRentIds(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    )
+  }
+
+  const handleSelectAll = () => {
+    if (selectedRentIds.length === rentRecords.length) {
+      setSelectedRentIds([])
+    } else {
+      setSelectedRentIds(rentRecords.map(rec => rec.id))
+    }
+  }
+
+  const handleConfirmBulkDelete = async () => {
+    if (selectedRentIds.length === 0) return
+    setIsBulkDeleting(true)
+    try {
+      const response = await fetch('/api/rent', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedRentIds })
+      })
+      if (!response.ok) throw new Error()
+      toast.success(`Successfully deleted ${selectedRentIds.length} rent records!`)
+      setSelectedRentIds([])
+      setIsBulkDeleteOpen(false)
+      fetchPropertiesAndRecords()
+    } catch {
+      toast.error('Could not delete selected rent records')
+    } finally {
+      setIsBulkDeleting(false)
+    }
+  }
+
   const propertyFilterOptions = [
     { label: 'All Buildings', value: 'all' },
     ...properties.map(p => ({ label: p.name, value: p.id }))
@@ -311,12 +352,53 @@ export default function RentCollectionPage() {
         />
       ) : (
         <div className="space-y-4">
+          {/* Bulk Action Bar */}
+          {selectedRentIds.length > 0 && (
+            <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex items-center justify-between shadow-sm animate-fade-in">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black text-rose-800 uppercase tracking-wider">
+                  Bulk Actions:
+                </span>
+                <span className="text-xs font-bold text-rose-700">
+                  {selectedRentIds.length} rent record{selectedRentIds.length > 1 ? 's' : ''} selected
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs font-bold px-3 py-1.5 text-slate-600 border-slate-200 hover:bg-slate-50 cursor-pointer"
+                  onClick={() => setSelectedRentIds([])}
+                >
+                  Clear Selection
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  className="text-xs font-bold px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white shadow-sm gap-1.5 cursor-pointer"
+                  onClick={() => setIsBulkDeleteOpen(true)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>Delete Selected</span>
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Desktop Table View */}
           <div className="hidden lg:block bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs md:text-sm">
                 <thead>
                   <tr className="bg-slate-50/75 border-b border-slate-200/80 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <th className="px-5 py-3.5 w-10">
+                      <input 
+                        type="checkbox"
+                        checked={rentRecords.length > 0 && selectedRentIds.length === rentRecords.length}
+                        onChange={handleSelectAll}
+                        className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer h-4 w-4"
+                      />
+                    </th>
                     <th className="px-5 py-3.5">Flat No.</th>
                     <th className="px-5 py-3.5">Tenant Name</th>
                     <th className="px-5 py-3.5">Building</th>
@@ -329,6 +411,14 @@ export default function RentCollectionPage() {
                 <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
                   {rentRecords.map((rec) => (
                     <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-5 py-4">
+                        <input 
+                          type="checkbox"
+                          checked={selectedRentIds.includes(rec.id)}
+                          onChange={() => handleSelectRent(rec.id)}
+                          className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer h-4 w-4"
+                        />
+                      </td>
                       <td className="px-5 py-4 font-bold text-slate-900">{rec.flat.flatNumber}</td>
                       <td className="px-5 py-4 font-bold text-slate-800">{rec.tenant.name}</td>
                       <td className="px-5 py-4">{rec.flat.property.name}</td>
@@ -369,13 +459,34 @@ export default function RentCollectionPage() {
           </div>
 
           {/* Mobile/Tablet Card View */}
+          <div className="lg:hidden flex justify-between items-center mb-3">
+            <span className="text-xs font-black text-slate-400 uppercase tracking-wider">
+              Records List
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-[11px] font-bold px-2 py-1 gap-1 text-slate-600 border-slate-200 hover:bg-slate-50 cursor-pointer"
+              onClick={handleSelectAll}
+            >
+              {selectedRentIds.length === rentRecords.length ? 'Deselect All' : 'Select All'}
+            </Button>
+          </div>
           <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
             {rentRecords.map((rec) => (
               <Card key={rec.id} className="hover:shadow-md transition-shadow duration-150 flex flex-col justify-between p-4 space-y-3">
                 <div className="flex justify-between items-start">
-                  <div>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Flat Unit</span>
-                    <span className="font-extrabold text-slate-900 text-sm">{rec.flat.flatNumber} · {rec.flat.property.name}</span>
+                  <div className="flex items-start gap-3">
+                    <input 
+                      type="checkbox"
+                      checked={selectedRentIds.includes(rec.id)}
+                      onChange={() => handleSelectRent(rec.id)}
+                      className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer h-4 w-4 mt-1"
+                    />
+                    <div>
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Flat Unit</span>
+                      <span className="font-extrabold text-slate-900 text-sm">{rec.flat.flatNumber} · {rec.flat.property.name}</span>
+                    </div>
                   </div>
                   <Badge variant={rec.status === 'PAID' ? 'paid' : rec.status === 'PARTIAL' ? 'partial' : rec.status === 'OVERDUE' ? 'overdue' : 'pending'}>
                     {rec.status}
@@ -529,6 +640,18 @@ export default function RentCollectionPage() {
         cancelText="Cancel"
         type="danger"
         isLoading={isDeletingRent}
+      />
+
+      <ConfirmModal
+        isOpen={isBulkDeleteOpen}
+        onClose={() => setIsBulkDeleteOpen(false)}
+        onConfirm={handleConfirmBulkDelete}
+        title="Delete Selected Rent Records"
+        message={`Are you sure you want to permanently delete the ${selectedRentIds.length} selected rent records? All historic rent billing log details for these records will be deleted.`}
+        confirmText="Delete Selected"
+        cancelText="Cancel"
+        type="danger"
+        isLoading={isBulkDeleting}
       />
     </div>
   )
