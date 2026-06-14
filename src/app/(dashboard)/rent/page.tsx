@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { toast } from 'sonner'
-import { Banknote, RefreshCw, Calendar, Edit3, Building2 } from 'lucide-react'
+import { Banknote, RefreshCw, Calendar, Edit3, Building2, Trash2 } from 'lucide-react'
 
 interface Property {
   id: string
@@ -71,6 +71,12 @@ export default function RentCollectionPage() {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState<RentRecord | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Delete State
+  const [isDeleteRentOpen, setIsDeleteRentOpen] = useState(false)
+  const [rentToDelete, setRentToDelete] = useState<RentRecord | null>(null)
+  const [isDeletingRent, setIsDeletingRent] = useState(false)
+
   const getTodayDateString = () => {
     const d = new Date()
     const month = String(d.getMonth() + 1).padStart(2, '0')
@@ -202,6 +208,30 @@ export default function RentCollectionPage() {
     }
   }
 
+  const handleDeleteRentClick = (rec: RentRecord) => {
+    setRentToDelete(rec)
+    setIsDeleteRentOpen(true)
+  }
+
+  const handleConfirmDeleteRent = async () => {
+    if (!rentToDelete) return
+    setIsDeletingRent(true)
+    try {
+      const response = await fetch(`/api/rent/${rentToDelete.id}`, {
+        method: 'DELETE'
+      })
+      if (!response.ok) throw new Error()
+      toast.success('Rent record deleted successfully')
+      setIsDeleteRentOpen(false)
+      setRentToDelete(null)
+      fetchPropertiesAndRecords()
+    } catch {
+      toast.error('Could not delete rent record')
+    } finally {
+      setIsDeletingRent(false)
+    }
+  }
+
   const propertyFilterOptions = [
     { label: 'All Buildings', value: 'all' },
     ...properties.map(p => ({ label: p.name, value: p.id }))
@@ -310,15 +340,26 @@ export default function RentCollectionPage() {
                         </Badge>
                       </td>
                       <td className="px-5 py-4 text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="px-2 py-1 text-[11px] font-bold gap-1 text-violet-600 border-violet-250/60 hover:bg-violet-50 hover:text-violet-700"
-                          onClick={() => handleOpenUpdateModal(rec)}
-                        >
-                          <Edit3 className="h-3 w-3" />
-                          <span>Update</span>
-                        </Button>
+                        <div className="flex justify-end gap-1.5">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="px-2 py-1 text-[11px] font-bold gap-1 text-violet-600 border-violet-250/60 hover:bg-violet-50 hover:text-violet-700"
+                            onClick={() => handleOpenUpdateModal(rec)}
+                          >
+                            <Edit3 className="h-3 w-3" />
+                            <span>Update</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="p-1 text-rose-600 border-rose-200/60 hover:bg-rose-50 hover:text-rose-700 cursor-pointer"
+                            onClick={() => handleDeleteRentClick(rec)}
+                            title="Delete Rent Record"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -362,15 +403,24 @@ export default function RentCollectionPage() {
                   )}
                 </div>
 
-                <div className="pt-1">
+                <div className="pt-1 flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full justify-center text-xs font-bold gap-1 py-2 text-violet-600 border-violet-250/60 hover:bg-violet-50 hover:text-violet-700"
+                    className="flex-1 justify-center text-xs font-bold gap-1 py-2 text-violet-600 border-violet-250/60 hover:bg-violet-50 hover:text-violet-700"
                     onClick={() => handleOpenUpdateModal(rec)}
                   >
                     <Edit3 className="h-4 w-4" />
                     <span>Update Collection</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700 py-2 px-3 cursor-pointer"
+                    onClick={() => handleDeleteRentClick(rec)}
+                    title="Delete Rent Record"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </Card>
@@ -464,6 +514,21 @@ export default function RentCollectionPage() {
         cancelText="Cancel"
         type="info"
         isLoading={isGenerating}
+      />
+
+      <ConfirmModal
+        isOpen={isDeleteRentOpen}
+        onClose={() => {
+          setIsDeleteRentOpen(false)
+          setRentToDelete(null)
+        }}
+        onConfirm={handleConfirmDeleteRent}
+        title="Delete Rent Record"
+        message={rentToDelete ? `Are you sure you want to delete the rent record for Flat ${rentToDelete.flat.flatNumber} (${rentToDelete.tenant.name}) for ${MONTHS_LIST.find(m => m.value === rentToDelete.month)?.label || ''} ${rentToDelete.year}?` : ''}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+        isLoading={isDeletingRent}
       />
     </div>
   )

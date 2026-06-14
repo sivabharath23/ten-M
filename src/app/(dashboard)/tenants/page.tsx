@@ -14,7 +14,8 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { Users, Plus, Phone, Calendar, UserPlus, FileText, CreditCard, Edit } from 'lucide-react'
+import { Users, Plus, Phone, Calendar, UserPlus, FileText, CreditCard, Edit, Trash2 } from 'lucide-react'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 
 type TenantFormInputs = typeof tenantSchema._output
 
@@ -79,6 +80,11 @@ export default function TenantsPage() {
     propertyId: '',
     flatId: ''
   })
+
+  // Delete tenant state variables
+  const [isDeleteTenantOpen, setIsDeleteTenantOpen] = useState(false)
+  const [tenantToDelete, setTenantToDelete] = useState<Tenant | null>(null)
+  const [isDeletingTenant, setIsDeletingTenant] = useState(false)
 
   const {
     register,
@@ -350,6 +356,30 @@ export default function TenantsPage() {
     }
   }
 
+  const handleDeleteTenantClick = (tenant: Tenant) => {
+    setTenantToDelete(tenant)
+    setIsDeleteTenantOpen(true)
+  }
+
+  const handleConfirmDeleteTenant = async () => {
+    if (!tenantToDelete) return
+    setIsDeletingTenant(true)
+    try {
+      const response = await fetch(`/api/tenants/${tenantToDelete.id}`, {
+        method: 'DELETE'
+      })
+      if (!response.ok) throw new Error()
+      toast.success('Tenant profile and all associated logs deleted successfully')
+      setIsDeleteTenantOpen(false)
+      setTenantToDelete(null)
+      fetchData()
+    } catch {
+      toast.error('Could not delete tenant profile')
+    } finally {
+      setIsDeletingTenant(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -444,6 +474,15 @@ export default function TenantsPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs font-bold px-2 text-rose-600 border-rose-250/60 hover:bg-rose-50 hover:text-rose-700 cursor-pointer"
+                      onClick={() => handleDeleteTenantClick(tenant)}
+                      title="Delete Tenant Profile"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -741,6 +780,19 @@ export default function TenantsPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Delete Tenant Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isDeleteTenantOpen}
+        onClose={() => setIsDeleteTenantOpen(false)}
+        onConfirm={handleConfirmDeleteTenant}
+        title="Delete Tenant Profile"
+        message={`Are you sure you want to permanently delete tenant ${tenantToDelete?.name}? This will vacate flat Unit ${tenantToDelete?.flat.flatNumber} and delete all historic rent billing records and utility logs associated with this tenant.`}
+        confirmText="Delete Tenant"
+        cancelText="Cancel"
+        type="danger"
+        isLoading={isDeletingTenant}
+      />
     </div>
   )
 }

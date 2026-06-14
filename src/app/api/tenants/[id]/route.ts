@@ -187,3 +187,45 @@ export async function PUT(
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 })
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const user = await getCurrentUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const isOwner = await checkOwnership(id, user.userId)
+    if (!isOwner) return NextResponse.json({ error: 'Not Found' }, { status: 404 })
+
+    const tenant = await prisma.tenant.findUnique({
+      where: { id }
+    })
+    if (!tenant) return NextResponse.json({ error: 'Not Found' }, { status: 404 })
+
+    await prisma.$transaction(async (tx) => {
+      // If tenant is active, make the flat VACANT
+      if (tenant.status === 'ACTIVE') {
+        await tx.flat.update({
+          where: { id: tenant.flatId },
+          data: { status: 'VACANT' }
+        })
+      }
+
+      // Delete related records
+      await tx.rentRecord.deleteMany({ where: { tenantId: id } })
+      await tx.advanceRecord.deleteMany({ where: { tenantId: id } })
+      await tx.rentRevision.deleteMany({ where: { tenantId: id } })
+
+      // Delete tenant
+      await tx.tenant.delete({ where: { id } })
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error: any) {
+    console.error('Delete tenant error:', error)
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 })
+  }
+}

@@ -30,7 +30,8 @@ import {
   RefreshCw,
   Edit,
   ToggleLeft,
-  Edit3
+  Edit3,
+  Trash2
 } from 'lucide-react'
 
 interface Property {
@@ -127,6 +128,10 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
   const [isAppraisalModalOpen, setIsAppraisalModalOpen] = useState(false)
   const [isUpdateRentModalOpen, setIsUpdateRentModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteTenantOpen, setIsDeleteTenantOpen] = useState(false)
+  const [isDeleteRentOpen, setIsDeleteRentOpen] = useState(false)
+  const [rentToDelete, setRentToDelete] = useState<RentRecord | null>(null)
+  const [isDeletingRent, setIsDeletingRent] = useState(false)
 
   // Forms state
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -502,6 +507,46 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
     }
   }
 
+  const handleDeleteTenant = async () => {
+    setIsSubmitting(true)
+    try {
+      const response = await fetch(`/api/tenants/${tenantId}`, {
+        method: 'DELETE'
+      })
+      if (!response.ok) throw new Error()
+      toast.success('Tenant profile and ledger records deleted successfully!')
+      setIsDeleteTenantOpen(false)
+      router.push('/tenants')
+    } catch {
+      toast.error('Failed to delete tenant profile')
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleDeleteRentClick = (rec: RentRecord) => {
+    setRentToDelete(rec)
+    setIsDeleteRentOpen(true)
+  }
+
+  const handleConfirmDeleteRent = async () => {
+    if (!rentToDelete) return
+    setIsSubmitting(true)
+    try {
+      const response = await fetch(`/api/rent/${rentToDelete.id}`, {
+        method: 'DELETE'
+      })
+      if (!response.ok) throw new Error()
+      toast.success('Rent record deleted successfully')
+      setIsDeleteRentOpen(false)
+      setRentToDelete(null)
+      fetchTenantDetail()
+    } catch {
+      toast.error('Could not delete rent record')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -585,7 +630,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
             {/* Quick Actions Panel */}
             {tenant.status === 'ACTIVE' ? (
               <div className="flex flex-col gap-2 pt-2">
-                <Button onClick={handleOpenEditModal} variant="outline" size="sm" className="w-full text-xs font-bold gap-1 text-violet-600 border-violet-200 hover:bg-violet-50 hover:text-violet-700">
+                <Button onClick={handleOpenEditModal} variant="outline" size="sm" className="w-full text-xs font-bold gap-1 text-violet-600 border-violet-250/65 hover:bg-violet-50 hover:text-violet-700">
                   <Edit className="h-3.5 w-3.5" />
                   <span>Edit Tenant Details</span>
                 </Button>
@@ -601,16 +646,24 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
                   <AlertCircle className="h-3.5 w-3.5" />
                   <span>Mark Tenant Vacated</span>
                 </Button>
+                <Button onClick={() => setIsDeleteTenantOpen(true)} variant="danger" size="sm" className="w-full text-xs font-bold gap-1 cursor-pointer">
+                  <Trash2 className="h-3.5 w-3.5 shrink-0" />
+                  <span>Delete Tenant Profile</span>
+                </Button>
               </div>
             ) : (
               <div className="flex flex-col gap-2 pt-2">
-                <Button onClick={handleOpenEditModal} variant="outline" size="sm" className="w-full text-xs font-bold gap-1 text-violet-600 border-violet-200 hover:bg-violet-50 hover:text-violet-700">
+                <Button onClick={handleOpenEditModal} variant="outline" size="sm" className="w-full text-xs font-bold gap-1 text-violet-600 border-violet-250/65 hover:bg-violet-50 hover:text-violet-700">
                   <Edit className="h-3.5 w-3.5" />
                   <span>Edit Tenant Details</span>
                 </Button>
                 <Button onClick={() => setIsReactivateModalOpen(true)} variant="secondary" size="sm" className="w-full text-xs font-bold gap-1">
                   <RefreshCw className="h-3.5 w-3.5 shrink-0" />
                   <span>Revert to Active / Occupied</span>
+                </Button>
+                <Button onClick={() => setIsDeleteTenantOpen(true)} variant="danger" size="sm" className="w-full text-xs font-bold gap-1 mt-2 cursor-pointer">
+                  <Trash2 className="h-3.5 w-3.5 shrink-0" />
+                  <span>Delete Tenant Profile</span>
                 </Button>
               </div>
             )}
@@ -716,17 +769,28 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
                                   {rec.status}
                                 </Badge>
                               </td>
-                              <td className="py-3 text-right">
+                              <td className="py-3 text-right flex justify-end items-center gap-2">
                                 {tenant.status === 'ACTIVE' && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="px-2 py-1 text-[11px] font-bold gap-1 text-violet-600 border-violet-250/60 hover:bg-violet-50 hover:text-violet-700"
-                                    onClick={() => handleOpenUpdateRentModal(rec)}
-                                  >
-                                    <Edit3 className="h-3 w-3" />
-                                    <span>Update</span>
-                                  </Button>
+                                  <>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="px-2 py-1 text-[11px] font-bold gap-1 text-violet-600 border-violet-250/60 hover:bg-violet-50 hover:text-violet-700"
+                                      onClick={() => handleOpenUpdateRentModal(rec)}
+                                    >
+                                      <Edit3 className="h-3 w-3" />
+                                      <span>Update</span>
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="p-1 text-rose-600 border-rose-205/60 hover:bg-rose-50 hover:text-rose-700 cursor-pointer"
+                                      onClick={() => handleDeleteRentClick(rec)}
+                                      title="Delete Rent Record"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </>
                                 )}
                               </td>
                             </tr>
@@ -761,15 +825,26 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
                           </div>
 
                           {tenant.status === 'ACTIVE' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full justify-center text-xs font-bold gap-1 py-2 text-violet-600 border-violet-250/60 hover:bg-violet-50 hover:text-violet-700"
-                              onClick={() => handleOpenUpdateRentModal(rec)}
-                            >
-                              <Edit3 className="h-4 w-4" />
-                              <span>Update Rent Record</span>
-                            </Button>
+                            <div className="flex gap-2 w-full">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1 justify-center text-xs font-bold gap-1 py-2 text-violet-600 border-violet-250/60 hover:bg-violet-50 hover:text-violet-700"
+                                onClick={() => handleOpenUpdateRentModal(rec)}
+                              >
+                                <Edit3 className="h-4 w-4" />
+                                <span>Update Rent Record</span>
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700 py-2 px-3 cursor-pointer"
+                                onClick={() => handleDeleteRentClick(rec)}
+                                title="Delete Rent Record"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           )}
                         </Card>
                       ))}
@@ -1122,6 +1197,32 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
           </div>
         </form>
       </Modal>
+
+      {/* Delete Tenant Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isDeleteTenantOpen}
+        onClose={() => setIsDeleteTenantOpen(false)}
+        onConfirm={handleDeleteTenant}
+        title="Delete Tenant Profile"
+        message={`Are you sure you want to permanently delete tenant ${tenant?.name}? This will vacate flat Unit ${tenant?.flat.flatNumber} and delete all historic rent billing records and utility logs associated with this tenant.`}
+        confirmText="Delete Tenant"
+        cancelText="Cancel"
+        type="danger"
+        isLoading={isSubmitting}
+      />
+
+      {/* Delete Rent Record Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isDeleteRentOpen}
+        onClose={() => setIsDeleteRentOpen(false)}
+        onConfirm={handleConfirmDeleteRent}
+        title="Delete Rent Record"
+        message={`Are you sure you want to permanently delete the rent record for ${MONTHS[(rentToDelete?.month ?? 1) - 1]} ${rentToDelete?.year}?`}
+        confirmText="Delete Record"
+        cancelText="Cancel"
+        type="danger"
+        isLoading={isSubmitting}
+      />
 
       {/* Reactivate Confirmation Dialog */}
       <ConfirmModal

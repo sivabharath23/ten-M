@@ -79,3 +79,42 @@ export async function PUT(
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const user = await getCurrentUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const isOwner = await checkOwnership(id, user.userId)
+    if (!isOwner) return NextResponse.json({ error: 'Not Found' }, { status: 404 })
+
+    const flat = await prisma.flat.findUnique({
+      where: { id },
+      include: {
+        tenants: {
+          where: { status: 'ACTIVE' }
+        }
+      }
+    })
+
+    if (flat && flat.tenants.length > 0) {
+      return NextResponse.json({ error: 'Cannot delete flat unit. It is currently occupied.' }, { status: 400 })
+    }
+
+    await prisma.$transaction([
+      prisma.rentRecord.deleteMany({ where: { flatId: id } }),
+      prisma.waterRecord.deleteMany({ where: { flatId: id } }),
+      prisma.tenant.deleteMany({ where: { flatId: id } }),
+      prisma.flat.delete({ where: { id } })
+    ])
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Delete flat error:', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  }
+}

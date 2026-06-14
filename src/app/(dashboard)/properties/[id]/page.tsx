@@ -15,7 +15,8 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { ArrowLeft, Plus, DoorOpen, Edit, Users } from 'lucide-react'
+import { ArrowLeft, Plus, DoorOpen, Edit, Users, Trash2 } from 'lucide-react'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 
 type FlatFormInputs = typeof flatSchema._output
 
@@ -55,6 +56,11 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [editingFlat, setEditingFlat] = useState<Flat | null>(null)
   const [maxFloors, setMaxFloors] = useState(10)
+
+  // Delete flat state variables
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
+  const [flatToDelete, setFlatToDelete] = useState<Flat | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const {
     register,
@@ -148,6 +154,37 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
       toast.error('Failed to save flat details. Please try again.')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleDeleteFlatClick = (flat: Flat) => {
+    if (flat.status === 'OCCUPIED') {
+      toast.error('Cannot delete flat unit. It is currently occupied.')
+      return
+    }
+    setFlatToDelete(flat)
+    setIsDeleteConfirmOpen(true)
+  }
+
+  const handleConfirmDeleteFlat = async () => {
+    if (!flatToDelete) return
+    setIsDeleting(true)
+    try {
+      const response = await fetch(`/api/flats/${flatToDelete.id}`, {
+        method: 'DELETE'
+      })
+      if (!response.ok) {
+        const resData = await response.json()
+        throw new Error(resData.error || 'Failed to delete flat unit')
+      }
+      toast.success('Flat unit deleted successfully')
+      setIsDeleteConfirmOpen(false)
+      setFlatToDelete(null)
+      fetchPropertyDetails()
+    } catch (err: any) {
+      toast.error(err.message || 'Could not delete flat unit')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -254,7 +291,7 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
                               </Link>
                             )}
                           </td>
-                          <td className="px-5 py-4 text-right">
+                          <td className="px-5 py-4 text-right flex justify-end items-center gap-2">
                             <Button 
                               variant="ghost" 
                               size="sm" 
@@ -263,6 +300,15 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
                               title="Edit Unit"
                             >
                               <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="p-1.5 h-auto text-rose-500 hover:text-rose-700 hover:bg-rose-50 inline-flex cursor-pointer"
+                              onClick={() => handleDeleteFlatClick(flat)}
+                              title="Delete Flat Unit"
+                            >
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </td>
                         </tr>
@@ -327,12 +373,21 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className={`${tenantName ? 'w-full' : 'w-12'} justify-center text-xs font-bold py-2 gap-1 text-slate-600`}
+                        className={`${tenantName ? 'flex-1' : 'flex-initial px-3'} justify-center text-xs font-bold py-2 gap-1 text-slate-600`}
                         onClick={() => handleOpenEditModal(flat)}
                         title="Edit Unit"
                       >
                         <Edit className="h-3.5 w-3.5" />
                         {tenantName && <span>Edit Unit</span>}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-rose-600 border-rose-250/60 hover:bg-rose-50 hover:text-rose-700 py-2 px-3 cursor-pointer"
+                        onClick={() => handleDeleteFlatClick(flat)}
+                        title="Delete Flat Unit"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </Card>
@@ -342,6 +397,19 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={handleConfirmDeleteFlat}
+        title="Delete Flat Unit"
+        message={`Are you sure you want to permanently delete flat Unit ${flatToDelete?.flatNumber}? All historic rent billing records and logs associated with this flat will also be deleted.`}
+        confirmText="Delete Flat"
+        cancelText="Cancel"
+        type="danger"
+        isLoading={isDeleting}
+      />
 
       {/* Add/Edit Modal */}
       <Modal

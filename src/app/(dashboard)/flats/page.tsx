@@ -14,7 +14,8 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { DoorOpen, Plus, Search, Building2, Users } from 'lucide-react'
+import { DoorOpen, Plus, Search, Building2, Users, Trash2 } from 'lucide-react'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 
 type FlatFormInputs = typeof flatSchema._output
 
@@ -51,6 +52,11 @@ export default function FlatsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [maxFloors, setMaxFloors] = useState(10)
+
+  // Delete flat state variables
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
+  const [flatToDelete, setFlatToDelete] = useState<Flat | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const {
     register,
@@ -144,6 +150,37 @@ export default function FlatsPage() {
       toast.error('Could not create flat. Confirm details and try again.')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleDeleteFlatClick = (flat: Flat) => {
+    if (flat.status === 'OCCUPIED') {
+      toast.error('Cannot delete flat unit. It is currently occupied.')
+      return
+    }
+    setFlatToDelete(flat)
+    setIsDeleteConfirmOpen(true)
+  }
+
+  const handleConfirmDeleteFlat = async () => {
+    if (!flatToDelete) return
+    setIsDeleting(true)
+    try {
+      const response = await fetch(`/api/flats/${flatToDelete.id}`, {
+        method: 'DELETE'
+      })
+      if (!response.ok) {
+        const resData = await response.json()
+        throw new Error(resData.error || 'Failed to delete flat unit')
+      }
+      toast.success('Flat unit deleted successfully')
+      setIsDeleteConfirmOpen(false)
+      setFlatToDelete(null)
+      fetchFlatsAndProperties()
+    } catch (err: any) {
+      toast.error(err.message || 'Could not delete flat unit')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -246,12 +283,21 @@ export default function FlatsPage() {
                             </Link>
                           )}
                         </td>
-                        <td className="px-5 py-4 text-right">
+                        <td className="px-5 py-4 text-right flex justify-end items-center gap-2">
                           <Link href={`/properties/${flat.propertyId}`}>
                             <Button variant="outline" size="sm" className="px-2.5 py-1 text-[11px] font-bold text-emerald-600 border-emerald-250/60 hover:bg-emerald-50 hover:text-emerald-700">
                               View Building
                             </Button>
                           </Link>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="p-1 text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700 cursor-pointer"
+                            onClick={() => handleDeleteFlatClick(flat)}
+                            title="Delete Flat Unit"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </td>
                       </tr>
                     )
@@ -303,12 +349,21 @@ export default function FlatsPage() {
                     </div>
                   </div>
 
-                  <div className="pt-1">
-                    <Link href={`/properties/${flat.propertyId}`}>
+                  <div className="pt-1 flex gap-2">
+                    <Link href={`/properties/${flat.propertyId}`} className="flex-1">
                       <Button variant="outline" size="sm" className="w-full justify-center text-xs font-bold text-emerald-600 border-emerald-250/60 hover:bg-emerald-50 hover:text-emerald-700 py-2">
                         View Building
                       </Button>
                     </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700 py-2 px-3 cursor-pointer"
+                      onClick={() => handleDeleteFlatClick(flat)}
+                      title="Delete Flat Unit"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </Card>
               )
@@ -316,6 +371,19 @@ export default function FlatsPage() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={handleConfirmDeleteFlat}
+        title="Delete Flat Unit"
+        message={`Are you sure you want to permanently delete flat Unit ${flatToDelete?.flatNumber}? All historic rent billing records and logs associated with this flat will also be deleted.`}
+        confirmText="Delete Flat"
+        cancelText="Cancel"
+        type="danger"
+        isLoading={isDeleting}
+      />
 
       {/* Add Flat Modal */}
       <Modal
