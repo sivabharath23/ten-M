@@ -14,7 +14,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { Users, Plus, Phone, Calendar, UserPlus, FileText, CreditCard } from 'lucide-react'
+import { Users, Plus, Phone, Calendar, UserPlus, FileText, CreditCard, Edit } from 'lucide-react'
 
 type TenantFormInputs = typeof tenantSchema._output
 
@@ -143,8 +143,11 @@ export default function TenantsPage() {
       const response = await fetch(`/api/flats?propertyId=${propertyId}`)
       if (!response.ok) throw new Error()
       const data: Flat[] = await response.json()
-      // Filter for vacant flats only
-      setFlats(data.filter(f => f.status === 'VACANT'))
+      // Filter and naturally sort vacant flats
+      const sortedVacant = data
+        .filter(f => f.status === 'VACANT')
+        .sort((a, b) => a.flatNumber.localeCompare(b.flatNumber, undefined, { numeric: true, sensitivity: 'base' }))
+      setFlats(sortedVacant)
     } catch {
       toast.error('Could not load flats for this property')
     }
@@ -272,8 +275,11 @@ export default function TenantsPage() {
 
       const flatsRes = await fetch(`/api/flats?propertyId=${tenant.flat.property.id}`)
       const flatsData = await flatsRes.json()
-      // Allow tenant's current flat or other vacant flats
-      setEditFlats(flatsData.filter((f: any) => f.status === 'VACANT' || f.id === tenant.flatId))
+      // Allow tenant's current flat or other vacant flats, sorted naturally
+      const sortedFlats = flatsData
+        .filter((f: any) => f.status === 'VACANT' || f.id === tenant.flatId)
+        .sort((a: any, b: any) => a.flatNumber.localeCompare(b.flatNumber, undefined, { numeric: true, sensitivity: 'base' }))
+      setEditFlats(sortedFlats)
     } catch {
       toast.error('Could not load properties/flats list for editing')
     }
@@ -289,7 +295,11 @@ export default function TenantsPage() {
     try {
       const response = await fetch(`/api/flats?propertyId=${propId}`)
       const data = await response.json()
-      setEditFlats(data.filter((f: any) => f.status === 'VACANT' || f.id === tenants.find(t => t.id === editingTenantId)?.flatId))
+      const currentFlatId = tenants.find(t => t.id === editingTenantId)?.flatId
+      const sortedFlats = data
+        .filter((f: any) => f.status === 'VACANT' || f.id === currentFlatId)
+        .sort((a: any, b: any) => a.flatNumber.localeCompare(b.flatNumber, undefined, { numeric: true, sensitivity: 'base' }))
+      setEditFlats(sortedFlats)
     } catch {
       toast.error('Could not load flats for this property')
     }
@@ -302,7 +312,7 @@ export default function TenantsPage() {
       return
     }
     const phoneRegex = /^[0-9+() -]{10,15}$/
-    if (!phoneRegex.test(editForm.phone)) {
+    if (editForm.phone && !phoneRegex.test(editForm.phone)) {
       toast.error('Please enter a valid phone number (10-15 digits)')
       return
     }
@@ -437,10 +447,11 @@ export default function TenantsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs font-bold px-3 text-violet-600 border-violet-250/60 hover:bg-violet-50 hover:text-violet-750"
+                      className="text-xs font-bold px-3 text-violet-600 border-violet-250/60 hover:bg-violet-50 hover:text-violet-750 gap-1 flex items-center"
                       onClick={() => handleOpenEditModal(tenant)}
                     >
-                      Edit
+                      <Edit className="h-3 w-3 shrink-0" />
+                      <span>Edit</span>
                     </Button>
                     <Link href={`/tenants/${tenant.id}`}>
                       <Button variant="outline" size="sm" className="text-xs font-bold px-3 text-emerald-600 border-emerald-250/60 hover:bg-emerald-50 hover:text-emerald-700">
@@ -651,9 +662,8 @@ export default function TenantsPage() {
           <div className="grid grid-cols-2 gap-2">
             <Input
               id="editPhone"
-              label="Phone Number"
+              label="Phone Number (Optional)"
               placeholder="e.g. 9876543210"
-              required
               value={editForm.phone}
               onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
             />

@@ -361,6 +361,7 @@ export default function FlatsPage() {
             label="BHK / Unit Type"
             options={[
               { label: '1 BHK', value: '1BHK' },
+              { label: '1 RK', value: '1RK' },
               { label: '2 BHK', value: '2BHK' },
               { label: '3 BHK', value: '3BHK' },
               { label: 'Studio Room', value: 'Studio' },

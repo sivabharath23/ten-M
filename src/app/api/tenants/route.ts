@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
         data: {
           flatId,
           name,
-          phone,
+          phone: phone || '',
           email,
           idProofType,
           idProofNumber,

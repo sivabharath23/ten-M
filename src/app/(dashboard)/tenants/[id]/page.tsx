@@ -251,8 +251,11 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
 
       const flatsRes = await fetch(`/api/flats?propertyId=${tenant.flat.property.id}`)
       const flatsData = await flatsRes.json()
-      // Allow the tenant's current flat or other vacant flats
-      setEditFlats(flatsData.filter((f: any) => f.status === 'VACANT' || f.id === tenant.flatId))
+      // Allow the tenant's current flat or other vacant flats, sorted naturally
+      const sortedFlats = flatsData
+        .filter((f: any) => f.status === 'VACANT' || f.id === tenant.flatId)
+        .sort((a: any, b: any) => a.flatNumber.localeCompare(b.flatNumber, undefined, { numeric: true, sensitivity: 'base' }))
+      setEditFlats(sortedFlats)
     } catch {
       toast.error('Could not load properties/flats list for editing')
     }
@@ -268,7 +271,10 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
     try {
       const response = await fetch(`/api/flats?propertyId=${propId}`)
       const data = await response.json()
-      setEditFlats(data.filter((f: any) => f.status === 'VACANT' || f.id === tenant?.flatId))
+      const sortedFlats = data
+        .filter((f: any) => f.status === 'VACANT' || f.id === tenant?.flatId)
+        .sort((a: any, b: any) => a.flatNumber.localeCompare(b.flatNumber, undefined, { numeric: true, sensitivity: 'base' }))
+      setEditFlats(sortedFlats)
     } catch {
       toast.error('Could not load flats for this property')
     }
@@ -281,7 +287,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
       return
     }
     const phoneRegex = /^[0-9+() -]{10,15}$/
-    if (!phoneRegex.test(editForm.phone)) {
+    if (editForm.phone && !phoneRegex.test(editForm.phone)) {
       toast.error('Please enter a valid phone number (10-15 digits)')
       return
     }
@@ -1199,9 +1205,8 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
           <div className="grid grid-cols-2 gap-2">
             <Input
               id="editPhone"
-              label="Phone Number"
+              label="Phone Number (Optional)"
               placeholder="e.g. 9876543210"
-              required
               value={editForm.phone}
               onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
             />

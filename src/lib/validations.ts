@@ -38,7 +38,10 @@ export const flatSchema = z.object({
 export const tenantSchema = z.object({
   flatId: z.string().min(1, 'Flat is required'),
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  phone: z.string().regex(/^[0-9+() -]{10,15}$/, 'Invalid phone number'),
+  phone: z.string().optional().or(z.literal('')).refine(
+    (val) => !val || /^[0-9+() -]{10,15}$/.test(val),
+    { message: 'Invalid phone number' }
+  ),
   email: z.string().email('Invalid email address').optional().or(z.literal('')),
   idProofType: z.string().optional().or(z.literal('')),
   idProofNumber: z.string().optional().or(z.literal('')),
