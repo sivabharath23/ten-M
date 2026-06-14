@@ -73,38 +73,49 @@ export async function POST(req: NextRequest) {
       }
     })
 
-    let createdCount = 0
+    const existingRecords = await prisma.rentRecord.findMany({
+      where: {
+        month,
+        year,
+        flat: {
+          property: {
+            userId: user.userId
+          }
+        }
+      },
+      select: {
+        tenantId: true
+      }
+    })
+
+    const existingTenantIds = new Set(existingRecords.map(r => r.tenantId))
+    const newRecordsData = []
 
     for (const property of properties) {
       for (const flat of property.flats) {
         for (const tenant of flat.tenants) {
-          const exists = await prisma.rentRecord.findUnique({
-            where: {
-              tenantId_month_year: {
-                tenantId: tenant.id,
-                month,
-                year
-              }
-            }
-          })
-
-          if (!exists) {
-            await prisma.rentRecord.create({
-              data: {
-                tenantId: tenant.id,
-                flatId: flat.id,
-                month,
-                year,
-                rentAmount: tenant.currentRent,
-                paidAmount: 0,
-                status: 'PENDING'
-              }
+          if (!existingTenantIds.has(tenant.id)) {
+            newRecordsData.push({
+              tenantId: tenant.id,
+              flatId: flat.id,
+              month,
+              year,
+              rentAmount: tenant.currentRent,
+              paidAmount: 0,
+              status: 'PENDING' as const
             })
-            createdCount++
           }
         }
       }
     }
+
+    if (newRecordsData.length > 0) {
+      await prisma.rentRecord.createMany({
+        data: newRecordsData
+      })
+    }
+
+    const createdCount = newRecordsData.length
 
     return NextResponse.json({ success: true, generated: createdCount })
   } catch (error) {

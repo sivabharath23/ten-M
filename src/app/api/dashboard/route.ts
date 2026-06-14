@@ -3,13 +3,16 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { subMonths, differenceInMonths } from 'date-fns'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const { searchParams } = new URL(req.url)
   const now = new Date()
-  const currentMonth = now.getMonth() + 1
-  const currentYear = now.getFullYear()
+  const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+
+  const month = parseInt(searchParams.get('month') || '') || (prevDate.getMonth() + 1)
+  const year = parseInt(searchParams.get('year') || '') || prevDate.getFullYear()
 
   try {
     // 1. Fetch properties & flats summary
@@ -31,11 +34,11 @@ export async function GET() {
     const vacantFlats = totalFlats - occupiedFlats
     const occupancyRate = totalFlats > 0 ? Math.round((occupiedFlats / totalFlats) * 100) : 0
 
-    // 2. Fetch current month's rent records for KPI
+    // 2. Fetch selected month's rent records for KPI
     const currentMonthRentRecords = await prisma.rentRecord.findMany({
       where: {
-        month: currentMonth,
-        year: currentYear,
+        month,
+        year,
         flat: {
           property: {
             userId: user.userId,
@@ -87,38 +90,43 @@ export async function GET() {
     }).length
 
     // 5. Build 6 months of collection data for bar chart
-    const collection6m = []
+    const monthYears = []
     for (let i = 5; i >= 0; i--) {
       const date = subMonths(now, i)
-      const m = date.getMonth() + 1
-      const y = date.getFullYear()
+      monthYears.push({
+        month: date.getMonth() + 1,
+        year: date.getFullYear(),
+        date
+      })
+    }
 
-      const records = await prisma.rentRecord.findMany({
-        where: {
-          month: m,
-          year: y,
-          flat: {
-            property: {
-              userId: user.userId,
-              status: 'ACTIVE'
-            }
+    const records = await prisma.rentRecord.findMany({
+      where: {
+        OR: monthYears.map(my => ({ month: my.month, year: my.year })),
+        flat: {
+          property: {
+            userId: user.userId,
+            status: 'ACTIVE'
           }
         }
-      })
+      }
+    })
 
+    const collection6m = monthYears.map(({ month: m, year: y, date }) => {
+      const matchingRecords = records.filter(r => r.month === m && r.year === y)
       let collected = 0
       let pending = 0
-      for (const r of records) {
+      for (const r of matchingRecords) {
         collected += r.paidAmount
         pending += Math.max(0, r.rentAmount - r.paidAmount)
       }
 
-      collection6m.push({
+      return {
         label: `${date.toLocaleString('default', { month: 'short' })} ${y.toString().slice(2)}`,
         collected,
         pending
-      })
-    }
+      }
+    })
 
     // 6. Fetch recent events (activity feed)
     const recentRent = await prisma.rentRecord.findMany({

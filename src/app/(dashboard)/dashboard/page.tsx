@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { Select } from '@/components/ui/Select'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { toast } from 'sonner'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
@@ -58,9 +59,19 @@ interface DashboardData {
   activities: Activity[]
 }
 
-const MONTHS_LIST = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
+const MONTHS_LIST_OPTIONS = [
+  { label: 'January', value: 1 },
+  { label: 'February', value: 2 },
+  { label: 'March', value: 3 },
+  { label: 'April', value: 4 },
+  { label: 'May', value: 5 },
+  { label: 'June', value: 6 },
+  { label: 'July', value: 7 },
+  { label: 'August', value: 8 },
+  { label: 'September', value: 9 },
+  { label: 'October', value: 10 },
+  { label: 'November', value: 11 },
+  { label: 'December', value: 12 },
 ]
 
 export default function DashboardPage() {
@@ -69,10 +80,22 @@ export default function DashboardPage() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [isConfirmGenerateOpen, setIsConfirmGenerateOpen] = useState(false)
 
-  const fetchDashboardData = async () => {
+  // Default to previous month
+  const now = new Date()
+  const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  const [selectedMonth, setSelectedMonth] = useState<number>(prevDate.getMonth() + 1)
+  const [selectedYear, setSelectedYear] = useState<number>(prevDate.getFullYear())
+
+  // Years options for selector
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
+    const y = new Date().getFullYear() - 2 + i
+    return { label: y.toString(), value: y }
+  })
+
+  const fetchDashboardData = async (m: number, y: number) => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/dashboard')
+      const response = await fetch(`/api/dashboard?month=${m}&year=${y}`)
       if (!response.ok) throw new Error()
       const dashboardData = await response.json()
       setData(dashboardData)
@@ -84,19 +107,18 @@ export default function DashboardPage() {
   }
 
   useEffect(() => {
-    fetchDashboardData()
-  }, [])
+    fetchDashboardData(selectedMonth, selectedYear)
+  }, [selectedMonth, selectedYear])
 
   const handleQuickGenerate = async () => {
     setIsGenerating(true)
-    const now = new Date()
     try {
       const response = await fetch('/api/rent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          month: now.getMonth() + 1,
-          year: now.getFullYear()
+          month: selectedMonth,
+          year: selectedYear
         })
       })
       const resData = await response.json()
@@ -107,7 +129,7 @@ export default function DashboardPage() {
           ? `Generated ${resData.generated} new rent records!`
           : 'Rent records are already up-to-date.'
       )
-      fetchDashboardData()
+      fetchDashboardData(selectedMonth, selectedYear)
     } catch (err: any) {
       toast.error(err.message || 'Failed to generate rent records')
     } finally {
@@ -168,6 +190,32 @@ export default function DashboardPage() {
           <span>Sync Month's Bills</span>
         </Button>
       </div>
+
+      {/* Date Selectors Card */}
+      <Card className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">
+            Stats Month
+          </label>
+          <Select
+            id="dashboardMonthSelect"
+            options={MONTHS_LIST_OPTIONS}
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">
+            Stats Year
+          </label>
+          <Select
+            id="dashboardYearSelect"
+            options={yearOptions}
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+          />
+        </div>
+      </Card>
 
       {/* KPI Cards Row */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -393,7 +441,7 @@ export default function DashboardPage() {
         onClose={() => setIsConfirmGenerateOpen(false)}
         onConfirm={handleConfirmGenerate}
         title="Sync Month's Bills"
-        message={`Are you sure you want to generate bill for ${MONTHS_LIST[new Date().getMonth()]} ${new Date().getFullYear()} and all properties?`}
+        message={`Are you sure you want to generate bills for ${MONTHS_LIST_OPTIONS.find(m => m.value === selectedMonth)?.label} ${selectedYear} and all properties?`}
         confirmText="Generate"
         cancelText="Cancel"
         type="info"
