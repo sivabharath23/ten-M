@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
         flat: {
           include: {
             property: {
-              select: { name: true }
+              select: { id: true, name: true }
             }
           }
         }
