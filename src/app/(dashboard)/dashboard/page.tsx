@@ -192,7 +192,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Date Selectors Card */}
-      <Card className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <Card className="p-4 grid grid-cols-1 sm:grid-cols-1 gap-4">
         <div>
           <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">
             Stats Month
