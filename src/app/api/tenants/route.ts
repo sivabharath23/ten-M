@@ -31,7 +31,11 @@ export async function GET(req: NextRequest) {
           }
         }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: {
+        flat: {
+          flatNumber: 'asc'
+        }
+      }
     })
 
     return NextResponse.json(tenants)

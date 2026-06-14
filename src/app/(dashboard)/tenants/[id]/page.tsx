@@ -34,11 +34,14 @@ import {
 } from 'lucide-react'
 
 interface Property {
+  id: string
   name: string
 }
 
 interface Flat {
+  id: string
   flatNumber: string
+  baseRent: number
   property: Property
 }
 
@@ -127,12 +130,19 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
 
   // Forms state
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [editProperties, setEditProperties] = useState<Property[]>([])
+  const [editFlats, setEditFlats] = useState<any[]>([])
   const [editForm, setEditForm] = useState({
     name: '',
     phone: '',
     email: '',
     idProofType: '',
-    idProofNumber: ''
+    idProofNumber: '',
+    joiningDate: '',
+    currentRent: 0,
+    advanceAmount: 0,
+    propertyId: '',
+    flatId: ''
   })
   const [selectedRentRecord, setSelectedRentRecord] = useState<RentRecord | null>(null)
   
@@ -215,16 +225,53 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
     }
   }
 
-  const handleOpenEditModal = () => {
+  const handleOpenEditModal = async () => {
     if (!tenant) return
-    setEditForm({
+    
+    const initialForm = {
       name: tenant.name,
       phone: tenant.phone,
       email: tenant.email || '',
       idProofType: tenant.idProofType || '',
-      idProofNumber: tenant.idProofNumber || ''
-    })
+      idProofNumber: tenant.idProofNumber || '',
+      joiningDate: new Date(tenant.joiningDate).toISOString().split('T')[0],
+      currentRent: tenant.currentRent,
+      advanceAmount: tenant.advanceAmount,
+      propertyId: tenant.flat.property.id,
+      flatId: tenant.flatId
+    }
+    
+    setEditForm(initialForm)
     setIsEditModalOpen(true)
+
+    try {
+      const propsRes = await fetch('/api/properties')
+      const propsData = await propsRes.json()
+      setEditProperties(propsData)
+
+      const flatsRes = await fetch(`/api/flats?propertyId=${tenant.flat.property.id}`)
+      const flatsData = await flatsRes.json()
+      // Allow the tenant's current flat or other vacant flats
+      setEditFlats(flatsData.filter((f: any) => f.status === 'VACANT' || f.id === tenant.flatId))
+    } catch {
+      toast.error('Could not load properties/flats list for editing')
+    }
+  }
+
+  const handleEditPropertyChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const propId = e.target.value
+    setEditForm(prev => ({ ...prev, propertyId: propId, flatId: '' }))
+    if (!propId) {
+      setEditFlats([])
+      return
+    }
+    try {
+      const response = await fetch(`/api/flats?propertyId=${propId}`)
+      const data = await response.json()
+      setEditFlats(data.filter((f: any) => f.status === 'VACANT' || f.id === tenant?.flatId))
+    } catch {
+      toast.error('Could not load flats for this property')
+    }
   }
 
   const handleEditSubmit = async (e: React.FormEvent) => {
@@ -238,13 +285,25 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
       toast.error('Please enter a valid phone number (10-15 digits)')
       return
     }
+    if (!editForm.flatId) {
+      toast.error('Please select a flat unit')
+      return
+    }
+    if (editForm.currentRent <= 0) {
+      toast.error('Rent must be a positive number')
+      return
+    }
 
     setIsSubmitting(true)
     try {
       const response = await fetch(`/api/tenants/${tenantId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editForm)
+        body: JSON.stringify({
+          ...editForm,
+          currentRent: Number(editForm.currentRent),
+          advanceAmount: Number(editForm.advanceAmount),
+        })
       })
       if (!response.ok) {
         const data = await response.json()
@@ -1100,6 +1159,34 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
         title="Edit Tenant Details"
       >
         <form onSubmit={handleEditSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <Select
+              id="editProperty"
+              label="Select Building"
+              options={editProperties.map(p => ({ label: p.name, value: p.id }))}
+              value={editForm.propertyId}
+              onChange={handleEditPropertyChange}
+              placeholder="Select Property"
+            />
+
+            <Select
+              id="editFlatId"
+              label="Select Flat Unit"
+              options={editFlats.map(f => ({ label: `Flat ${f.flatNumber} (₹${f.baseRent})`, value: f.id }))}
+              value={editForm.flatId}
+              onChange={(e) => {
+                const selectedFlat = editFlats.find(f => f.id === e.target.value)
+                setEditForm(prev => ({
+                  ...prev,
+                  flatId: e.target.value,
+                  currentRent: selectedFlat ? selectedFlat.baseRent : prev.currentRent
+                }))
+              }}
+              disabled={!editForm.propertyId || editFlats.length === 0}
+              placeholder={editForm.propertyId ? (editFlats.length === 0 ? 'No vacant flats' : 'Select Flat') : 'Select Property first'}
+            />
+          </div>
+
           <Input
             id="editName"
             label="Tenant Name"
@@ -1109,33 +1196,35 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
           />
 
-          <Input
-            id="editPhone"
-            label="Phone Number"
-            placeholder="e.g. 9876543210"
-            required
-            value={editForm.phone}
-            onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-          />
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              id="editPhone"
+              label="Phone Number"
+              placeholder="e.g. 9876543210"
+              required
+              value={editForm.phone}
+              onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+            />
 
-          <Input
-            id="editEmail"
-            type="email"
-            label="Email Address (Optional)"
-            placeholder="e.g. john@example.com"
-            value={editForm.email}
-            onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-          />
+            <Input
+              id="editEmail"
+              type="email"
+              label="Email Address (Optional)"
+              placeholder="e.g. john@example.com"
+              value={editForm.email}
+              onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+            />
+          </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2">
             <Select
               id="editIdProofType"
               label="ID Proof Type"
               options={[
-                { label: 'Aadhaar Card', value: 'Aadhaar Card' },
-                { label: 'PAN Card', value: 'PAN Card' },
-                { label: 'Driving License', value: 'Driving License' },
+                { label: 'Aadhar Card', value: 'Aadhar' },
+                { label: 'PAN Card', value: 'PAN' },
                 { label: 'Passport', value: 'Passport' },
+                { label: 'Driving License', value: 'License' },
                 { label: 'Other', value: 'Other' },
               ]}
               value={editForm.idProofType}
@@ -1148,6 +1237,35 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
               placeholder="e.g. XXXX-XXXX-XXXX"
               value={editForm.idProofNumber}
               onChange={(e) => setEditForm({ ...editForm, idProofNumber: e.target.value })}
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            <Input
+              id="editJoiningDate"
+              type="date"
+              label="Joining Date"
+              required
+              value={editForm.joiningDate}
+              onChange={(e) => setEditForm({ ...editForm, joiningDate: e.target.value })}
+            />
+
+            <Input
+              id="editCurrentRent"
+              type="number"
+              label="Current Rent (₹)"
+              required
+              value={editForm.currentRent || ''}
+              onChange={(e) => setEditForm({ ...editForm, currentRent: parseFloat(e.target.value) || 0 })}
+            />
+
+            <Input
+              id="editAdvanceAmount"
+              type="number"
+              label="Security Advance (₹)"
+              required
+              value={editForm.advanceAmount || ''}
+              onChange={(e) => setEditForm({ ...editForm, advanceAmount: parseFloat(e.target.value) || 0 })}
             />
           </div>
 

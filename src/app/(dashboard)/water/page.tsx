@@ -111,6 +111,11 @@ export default function WaterBillingPage() {
       const url = `/api/water?month=${selectedMonth}&year=${selectedYear}&propertyId=${selectedPropertyId}`
       const logsRes = await fetch(url)
       const logsData = await logsRes.json()
+      if (Array.isArray(logsData)) {
+        logsData.sort((a: any, b: any) =>
+          a.flat.flatNumber.localeCompare(b.flat.flatNumber, undefined, { numeric: true, sensitivity: 'base' })
+        )
+      }
       setWaterRecords(logsData)
     } catch {
       toast.error('Could not fetch water usage details')

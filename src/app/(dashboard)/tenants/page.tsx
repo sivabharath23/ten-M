@@ -89,6 +89,11 @@ export default function TenantsPage() {
       // Fetch tenants based on status
       const tenantsRes = await fetch(`/api/tenants?status=${filterStatus}`)
       const tenantsData = await tenantsRes.json()
+      if (Array.isArray(tenantsData)) {
+        tenantsData.sort((a: any, b: any) =>
+          a.flat.flatNumber.localeCompare(b.flat.flatNumber, undefined, { numeric: true, sensitivity: 'base' })
+        )
+      }
       setTenants(tenantsData)
 
       // Fetch properties for addition dropdown

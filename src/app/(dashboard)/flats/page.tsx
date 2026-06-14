@@ -99,6 +99,11 @@ export default function FlatsPage() {
       const flatsResponse = await fetch(flatsUrl)
       if (!flatsResponse.ok) throw new Error()
       const flatsData = await flatsResponse.json()
+      if (Array.isArray(flatsData)) {
+        flatsData.sort((a: any, b: any) =>
+          a.flatNumber.localeCompare(b.flatNumber, undefined, { numeric: true, sensitivity: 'base' })
+        )
+      }
       setFlats(flatsData)
     } catch {
       toast.error('Could not load data')

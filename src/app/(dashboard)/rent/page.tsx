@@ -116,6 +116,11 @@ export default function RentCollectionPage() {
       )
       if (!response.ok) throw new Error()
       const data = await response.json()
+      if (Array.isArray(data)) {
+        data.sort((a: any, b: any) =>
+          a.flat.flatNumber.localeCompare(b.flat.flatNumber, undefined, { numeric: true, sensitivity: 'base' })
+        )
+      }
       setRentRecords(data)
     } catch {
       toast.error('Could not load rent collection details')
