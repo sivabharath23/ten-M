@@ -197,7 +197,7 @@ export default function TenantsPage() {
   const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    
+
     const reader = new FileReader()
     reader.onloadend = () => {
       const base64String = reader.result as string
@@ -209,7 +209,7 @@ export default function TenantsPage() {
         const MAX_HEIGHT = 1000
         let width = img.width
         let height = img.height
-        
+
         if (width > height) {
           if (width > MAX_WIDTH) {
             height *= MAX_WIDTH / width
@@ -221,7 +221,7 @@ export default function TenantsPage() {
             height = MAX_HEIGHT
           }
         }
-        
+
         canvas.width = width
         canvas.height = height
         const ctx = canvas.getContext('2d')
@@ -474,7 +474,7 @@ export default function TenantsPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Button
+                    {/* <Button
                       variant="outline"
                       size="sm"
                       className="text-xs font-bold px-2 text-rose-600 border-rose-250/60 hover:bg-rose-50 hover:text-rose-700 cursor-pointer"
@@ -482,7 +482,7 @@ export default function TenantsPage() {
                       title="Delete Tenant Profile"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    </Button> */}
                     <Button
                       variant="outline"
                       size="sm"
@@ -582,7 +582,7 @@ export default function TenantsPage() {
               {...register('idProofNumber')}
             />
           </div>
- 
+
           {/* Document File / Photo Upload */}
           <div className="border border-dashed border-slate-200 rounded-xl p-3 bg-slate-50/50 space-y-2">
             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">
