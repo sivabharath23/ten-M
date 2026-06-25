@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid fields' }, { status: 400 })
     }
 
-    const { flatId, month, year, reading, initialReading } = parsed.data
+    const { flatId, month, year, reading } = parsed.data
 
     // Check ownership of flat
     const flat = await prisma.flat.findFirst({
@@ -100,42 +100,10 @@ export async function POST(req: NextRequest) {
       ]
     })
 
-    let finalPreviousReading = 0
-    let hasPrevious = !!lastRecord
-
-    if (!hasPrevious && initialReading !== undefined && initialReading !== null) {
-      // Create a starting baseline record for the prior month
-      let priorMonth = month - 1
-      let priorYear = year
-      if (priorMonth === 0) {
-        priorMonth = 12
-        priorYear = year - 1
-      }
-
-      await prisma.waterRecord.create({
-        data: {
-          flatId,
-          month: priorMonth,
-          year: priorYear,
-          reading: initialReading,
-          unitsConsumed: 0,
-          costPerLitre: waterCostPerLitre,
-          totalCost: 0,
-          isPaid: true,
-          notes: "Initial starting baseline reading"
-        }
-      })
-      finalPreviousReading = initialReading
-      hasPrevious = true
-    } else if (lastRecord) {
-      finalPreviousReading = lastRecord.reading
-    } else {
-      // First log without custom initial reading defaults to reading (usage = 0)
-      finalPreviousReading = reading
-    }
-
-    const unitsConsumed = Math.max(0, reading - finalPreviousReading)
+    const hasPrevious = !!lastRecord
+    const unitsConsumed = hasPrevious ? Math.max(0, reading - lastRecord.reading) : 0
     const totalCost = unitsConsumed * waterCostPerLitre
+    const isPaid = hasPrevious ? false : true
 
     const waterRecord = await prisma.waterRecord.upsert({
       where: {
@@ -153,7 +121,7 @@ export async function POST(req: NextRequest) {
         unitsConsumed,
         costPerLitre: waterCostPerLitre,
         totalCost,
-        isPaid: false
+        isPaid
       },
       update: {
         reading,

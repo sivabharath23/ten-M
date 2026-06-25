@@ -104,7 +104,6 @@ export default function WaterBillingPage() {
       month: currentDate.getMonth() + 1,
       year: currentDate.getFullYear(),
       reading: 0,
-      initialReading: 0,
     },
   })
 
@@ -205,7 +204,6 @@ export default function WaterBillingPage() {
       month: selectedMonth,
       year: selectedYear,
       reading: 0,
-      initialReading: 0,
     })
     setLastReading(null)
     setIsModalOpen(true)
@@ -624,28 +622,18 @@ export default function WaterBillingPage() {
            {lastReading === null ? (
             <div className="space-y-4">
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-[11px] text-blue-800 font-bold leading-normal">
-                🔔 First log for this flat unit! Please record the starting/initial reading value from the water meter below to kickstart consumption tracking.
+                🔔 No initial reading found for this flat! You must first record the starting/initial meter reading to establish a baseline before logging monthly water bills.
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <Input
-                  id="initialReading"
-                  type="number"
-                  label="Initial Meter Reading (L)"
-                  placeholder="e.g. 10000"
-                  error={errors.initialReading?.message}
-                  {...register('initialReading', { valueAsNumber: true })}
-                />
-                <Input
-                  id="reading"
-                  type="number"
-                  label="Current Reading (L)"
-                  placeholder="e.g. 10250"
-                  error={errors.reading?.message}
-                  {...register('reading', { valueAsNumber: true })}
-                />
-              </div>
-              <p className="text-[11px] text-emerald-600 font-bold -mt-2">
-                Calculated usage: {watch('reading') && watch('initialReading') !== undefined ? Math.max(0, Number(watch('reading')) - Number(watch('initialReading'))).toLocaleString() : 0} L
+              <Input
+                id="reading"
+                type="number"
+                label="Initial Starting Meter Reading (L)"
+                placeholder="e.g. 10000"
+                error={errors.reading?.message}
+                {...register('reading', { valueAsNumber: true })}
+              />
+              <p className="text-[11px] text-slate-400 font-semibold -mt-2">
+                Note: Usage and bill amount for this initial baseline log will be ₹0.
               </p>
             </div>
           ) : (
@@ -669,7 +657,7 @@ export default function WaterBillingPage() {
               Cancel
             </Button>
             <Button type="submit" isLoading={isSubmitting}>
-              Register Usage Log
+              {lastReading === null ? 'Register Initial Reading' : 'Register Usage Log'}
             </Button>
           </div>
         </form>

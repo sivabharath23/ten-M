@@ -58,7 +58,6 @@ export const waterRecordSchema = z.object({
   month: z.number().int().min(1).max(12),
   year: z.number().int().min(2000),
   reading: z.number().min(0, 'Meter reading must be 0 or higher'),
-  initialReading: z.number().min(0, 'Initial reading must be 0 or higher').optional(),
 })
 
 export const advanceRecordSchema = z.object({
