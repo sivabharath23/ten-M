@@ -30,7 +30,7 @@ export default function SettingsPage() {
       lateFeeAmount: 0.0,
       lateFeeGraceDays: 5,
       maxFloors: 10,
-      noticePeriod: 30,
+      noticePeriod: 90,
     },
   })
 
@@ -47,7 +47,7 @@ export default function SettingsPage() {
           lateFeeAmount: data.lateFeeAmount,
           lateFeeGraceDays: data.lateFeeGraceDays,
           maxFloors: data.maxFloors ?? 10,
-          noticePeriod: data.noticePeriod ?? 30,
+          noticePeriod: data.noticePeriod ?? 90,
         })
       }
     } catch {

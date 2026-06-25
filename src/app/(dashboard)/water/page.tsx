@@ -104,6 +104,7 @@ export default function WaterBillingPage() {
       month: currentDate.getMonth() + 1,
       year: currentDate.getFullYear(),
       reading: 0,
+      initialReading: 0,
     },
   })
 
@@ -204,6 +205,7 @@ export default function WaterBillingPage() {
       month: selectedMonth,
       year: selectedYear,
       reading: 0,
+      initialReading: 0,
     })
     setLastReading(null)
     setIsModalOpen(true)
@@ -619,22 +621,47 @@ export default function WaterBillingPage() {
             />
           </div>
 
-          <Input
-            id="reading"
-            type="number"
-            label="Water Meter Reading (Litres)"
-            placeholder="e.g. 12500"
-            error={errors.reading?.message}
-            {...register('reading', { valueAsNumber: true })}
-          />
-          {lastReading !== null ? (
-            <p className="text-[11px] text-emerald-600 font-bold -mt-2.5">
-              Previous reading: {lastReading.toLocaleString()} L. Calculated usage: {watch('reading') ? Math.max(0, watch('reading') - lastReading).toLocaleString() : 0} L.
-            </p>
+           {lastReading === null ? (
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-[11px] text-blue-800 font-bold leading-normal">
+                🔔 First log for this flat unit! Please record the starting/initial reading value from the water meter below to kickstart consumption tracking.
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  id="initialReading"
+                  type="number"
+                  label="Initial Meter Reading (L)"
+                  placeholder="e.g. 10000"
+                  error={errors.initialReading?.message}
+                  {...register('initialReading', { valueAsNumber: true })}
+                />
+                <Input
+                  id="reading"
+                  type="number"
+                  label="Current Reading (L)"
+                  placeholder="e.g. 10250"
+                  error={errors.reading?.message}
+                  {...register('reading', { valueAsNumber: true })}
+                />
+              </div>
+              <p className="text-[11px] text-emerald-600 font-bold -mt-2">
+                Calculated usage: {watch('reading') && watch('initialReading') !== undefined ? Math.max(0, Number(watch('reading')) - Number(watch('initialReading'))).toLocaleString() : 0} L
+              </p>
+            </div>
           ) : (
-            <p className="text-[11px] text-amber-600 font-bold -mt-2.5">
-              First reading for this flat. This will be used as the starting baseline.
-            </p>
+            <div className="space-y-4">
+              <Input
+                id="reading"
+                type="number"
+                label="Current Water Meter Reading (Litres)"
+                placeholder="e.g. 12500"
+                error={errors.reading?.message}
+                {...register('reading', { valueAsNumber: true })}
+              />
+              <p className="text-[11px] text-emerald-600 font-bold -mt-2">
+                Previous reading: {lastReading.toLocaleString()} L. Calculated usage: {watch('reading') ? Math.max(0, Number(watch('reading')) - lastReading).toLocaleString() : 0} L.
+              </p>
+            </div>
           )}
 
           <div className="flex justify-end gap-3 pt-2">

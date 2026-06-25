@@ -33,7 +33,7 @@ model Settings {
   lateFeeAmount         Float    @default(0.0)
   lateFeeGraceDays      Int      @default(5)
   maxFloors             Int      @default(10)
-  noticePeriod          Int      @default(30)
+  noticePeriod          Int      @default(90)
   updatedAt             DateTime @updatedAt
 }
 
