@@ -34,6 +34,7 @@ interface WaterRecord {
   id: string
   month: number
   year: number
+  reading: number
   unitsConsumed: number
   costPerLitre: number
   totalCost: number
@@ -87,12 +88,14 @@ export default function WaterBillingPage() {
   const [selectedWaterIds, setSelectedWaterIds] = useState<string[]>([])
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false)
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
+  const [lastReading, setLastReading] = useState<number | null>(null)
 
   const {
     register,
     handleSubmit,
     setValue,
     reset,
+    watch,
     formState: { errors },
   } = useForm<WaterFormInputs>({
     resolver: zodResolver(waterRecordSchema),
@@ -100,7 +103,7 @@ export default function WaterBillingPage() {
       flatId: '',
       month: currentDate.getMonth() + 1,
       year: currentDate.getFullYear(),
-      unitsConsumed: 0,
+      reading: 0,
     },
   })
 
@@ -109,6 +112,36 @@ export default function WaterBillingPage() {
     const y = currentDate.getFullYear() - 2 + i
     return { label: y.toString(), value: y }
   })
+
+  const watchFlatId = watch('flatId')
+  const watchMonth = watch('month')
+  const watchYear = watch('year')
+
+  const fetchLastReading = async (flatId: string, month: number, year: number) => {
+    if (!flatId) {
+      setLastReading(null)
+      return
+    }
+    try {
+      const res = await fetch(`/api/water/last-reading?flatId=${flatId}&month=${month}&year=${year}`)
+      if (res.ok) {
+        const data = await res.json()
+        setLastReading(data.hasPrevious ? data.reading : null)
+      } else {
+        setLastReading(null)
+      }
+    } catch {
+      setLastReading(null)
+    }
+  }
+
+  useEffect(() => {
+    if (watchFlatId && watchMonth && watchYear) {
+      fetchLastReading(watchFlatId, Number(watchMonth), Number(watchYear))
+    } else {
+      setLastReading(null)
+    }
+  }, [watchFlatId, watchMonth, watchYear])
 
   const fetchWaterDetails = async () => {
     setIsLoading(true)
@@ -170,8 +203,9 @@ export default function WaterBillingPage() {
       flatId: '',
       month: selectedMonth,
       year: selectedYear,
-      unitsConsumed: 0,
+      reading: 0,
     })
+    setLastReading(null)
     setIsModalOpen(true)
   }
 
@@ -394,6 +428,7 @@ export default function WaterBillingPage() {
                     <th className="px-5 py-3.5">Flat No.</th>
                     <th className="px-5 py-3.5">Tenant Name</th>
                     <th className="px-5 py-3.5">Building</th>
+                    <th className="px-5 py-3.5">Reading (L)</th>
                     <th className="px-5 py-3.5">Usage (Litres)</th>
                     <th className="px-5 py-3.5">Rate (₹/L)</th>
                     <th className="px-5 py-3.5">Total Bill</th>
@@ -412,9 +447,10 @@ export default function WaterBillingPage() {
                           className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer h-4 w-4"
                         />
                       </td>
-                      <td className="px-5 py-4 font-bold text-slate-900">{rec.flat.flatNumber}</td>
+                       <td className="px-5 py-4 font-bold text-slate-900">{rec.flat.flatNumber}</td>
                       <td className="px-5 py-4 font-bold text-slate-800">{getActiveTenantName(rec)}</td>
                       <td className="px-5 py-4">{rec.flat.property.name}</td>
+                      <td className="px-5 py-4 font-bold text-slate-800">{rec.reading?.toLocaleString() || '0'} L</td>
                       <td className="px-5 py-4">{rec.unitsConsumed.toLocaleString()} L</td>
                       <td className="px-5 py-4">₹{rec.costPerLitre}</td>
                       <td className="px-5 py-4 text-slate-900 font-bold">₹{rec.totalCost.toLocaleString()}</td>
@@ -495,8 +531,8 @@ export default function WaterBillingPage() {
                     <span className="font-extrabold text-slate-800">{getActiveTenantName(rec)}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Usage</span>
-                    <span className="font-extrabold text-slate-800">{rec.unitsConsumed.toLocaleString()} L</span>
+                    <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Reading / Usage</span>
+                    <span className="font-extrabold text-slate-800">{rec.reading?.toLocaleString() || '0'} L / {rec.unitsConsumed.toLocaleString()} L</span>
                   </div>
                   <div>
                     <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Rate</span>
@@ -584,13 +620,22 @@ export default function WaterBillingPage() {
           </div>
 
           <Input
-            id="unitsConsumed"
+            id="reading"
             type="number"
-            label="Water Units Consumed (Litres)"
-            placeholder="e.g. 2500"
-            error={errors.unitsConsumed?.message}
-            {...register('unitsConsumed', { valueAsNumber: true })}
+            label="Water Meter Reading (Litres)"
+            placeholder="e.g. 12500"
+            error={errors.reading?.message}
+            {...register('reading', { valueAsNumber: true })}
           />
+          {lastReading !== null ? (
+            <p className="text-[11px] text-emerald-600 font-bold -mt-2.5">
+              Previous reading: {lastReading.toLocaleString()} L. Calculated usage: {watch('reading') ? Math.max(0, watch('reading') - lastReading).toLocaleString() : 0} L.
+            </p>
+          ) : (
+            <p className="text-[11px] text-amber-600 font-bold -mt-2.5">
+              First reading for this flat. This will be used as the starting baseline.
+            </p>
+          )}
 
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>

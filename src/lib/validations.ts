@@ -18,6 +18,7 @@ export const settingsSchema = z.object({
   lateFeeAmount: z.number().min(0, 'Must be 0 or positive'),
   lateFeeGraceDays: z.number().int().min(0, 'Must be 0 or positive'),
   maxFloors: z.number().int().min(1, 'Max floors must be at least 1').max(100, 'Max floors cannot exceed 100'),
+  noticePeriod: z.number().int().min(0, 'Must be 0 or positive'),
 })
 
 export const propertySchema = z.object({
@@ -46,6 +47,7 @@ export const tenantSchema = z.object({
   idProofType: z.string().optional().or(z.literal('')),
   idProofNumber: z.string().optional().or(z.literal('')),
   idProofUrl: z.string().optional().or(z.literal('')),
+  rentalAgreementUrl: z.string().optional().or(z.literal('')),
   joiningDate: z.string().min(1, 'Joining date is required'),
   currentRent: z.number().positive('Rent must be positive'),
   advanceAmount: z.number().min(0, 'Advance must be 0 or positive'),
@@ -55,7 +57,7 @@ export const waterRecordSchema = z.object({
   flatId: z.string().min(1, 'Flat is required'),
   month: z.number().int().min(1).max(12),
   year: z.number().int().min(2000),
-  unitsConsumed: z.number().min(0, 'Units consumed must be 0 or higher'),
+  reading: z.number().min(0, 'Meter reading must be 0 or higher'),
 })
 
 export const advanceRecordSchema = z.object({

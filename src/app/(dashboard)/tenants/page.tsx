@@ -63,6 +63,7 @@ export default function TenantsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [filterStatus, setFilterStatus] = useState<'ACTIVE' | 'VACATED'>('ACTIVE')
   const [docImage, setDocImage] = useState<string>('')
+  const [agreementFile, setAgreementFile] = useState<string>('')
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingTenantId, setEditingTenantId] = useState<string | null>(null)
@@ -191,6 +192,7 @@ export default function TenantsPage() {
     setSelectedPropertyId('')
     setFlats([])
     setDocImage('')
+    setAgreementFile('')
     setIsModalOpen(true)
   }
 
@@ -234,6 +236,52 @@ export default function TenantsPage() {
     reader.readAsDataURL(file)
   }
 
+  const handleAgreementChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const base64String = reader.result as string
+      if (file.type === 'application/pdf') {
+        setAgreementFile(base64String)
+        toast.success('Rental agreement PDF selected successfully!')
+        return
+      }
+
+      const img = new Image()
+      img.src = base64String
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const MAX_WIDTH = 1200
+        const MAX_HEIGHT = 1200
+        let width = img.width
+        let height = img.height
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width
+            width = MAX_WIDTH
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height
+            height = MAX_HEIGHT
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        ctx?.drawImage(img, 0, 0, width, height)
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6)
+        setAgreementFile(compressedBase64)
+        toast.success('Rental agreement image compressed successfully!')
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
   const onSubmit = async (data: TenantFormInputs) => {
     setIsSubmitting(true)
     try {
@@ -243,6 +291,7 @@ export default function TenantsPage() {
         body: JSON.stringify({
           ...data,
           idProofUrl: docImage || undefined,
+          rentalAgreementUrl: agreementFile || undefined,
         }),
       })
       const resData = await response.json()
@@ -612,6 +661,46 @@ export default function TenantsPage() {
                 <label className="mt-1 cursor-pointer inline-flex items-center gap-1 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-[11px] font-bold text-slate-600 transition-colors">
                   <span>{docImage ? 'Replace Image' : 'Select File / Take Photo'}</span>
                   <input type="file" accept="image/*" className="hidden" onChange={handleDocumentChange} />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Rental Agreement File / PDF Upload */}
+          <div className="border border-dashed border-slate-200 rounded-xl p-3 bg-slate-50/50 space-y-2">
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">
+              Rental Agreement Document
+            </label>
+            <div className="flex items-center gap-3">
+              {agreementFile ? (
+                <div className="relative h-12 w-16 border border-slate-100 rounded-lg overflow-hidden bg-slate-50 shrink-0 flex items-center justify-center">
+                  {agreementFile.startsWith('data:application/pdf') ? (
+                    <FileText className="h-6 w-6 text-brand-600" />
+                  ) : (
+                    <img src={agreementFile} alt="Agreement Preview" className="object-contain h-full w-full" />
+                  )}
+                </div>
+              ) : (
+                <div className="h-12 w-16 border border-dashed border-slate-200 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+                  <FileText className="h-5 w-5" />
+                </div>
+              )}
+              <div className="flex-1">
+                {agreementFile ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-emerald-600">
+                      {agreementFile.startsWith('data:application/pdf') ? 'Agreement PDF selected' : 'Agreement image selected'}
+                    </span>
+                    <button type="button" className="text-[10px] font-bold text-rose-500 hover:underline cursor-pointer" onClick={() => setAgreementFile('')}>
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-slate-400 font-semibold leading-tight">Attach a signed PDF agreement or upload/take an image copy.</p>
+                )}
+                <label className="mt-1 cursor-pointer inline-flex items-center gap-1 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-[11px] font-bold text-slate-600 transition-colors">
+                  <span>{agreementFile ? 'Replace Document' : 'Select PDF / Image / Photo'}</span>
+                  <input type="file" accept="image/*,application/pdf" className="hidden" onChange={handleAgreementChange} />
                 </label>
               </div>
             </div>

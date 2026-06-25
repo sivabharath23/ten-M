@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid fields' }, { status: 400 })
     }
 
-    const { flatId, month, year, unitsConsumed } = parsed.data
+    const { flatId, month, year, reading } = parsed.data
 
     // Check ownership of flat
     const flat = await prisma.flat.findFirst({
@@ -84,6 +84,24 @@ export async function POST(req: NextRequest) {
       where: { userId: user.userId }
     })
     const waterCostPerLitre = settings?.waterCostPerLitre ?? 0.05
+
+    // Get previous reading chronologically prior to this month/year
+    const lastRecord = await prisma.waterRecord.findFirst({
+      where: {
+        flatId,
+        OR: [
+          { year: { lt: year } },
+          { year: year, month: { lt: month } }
+        ]
+      },
+      orderBy: [
+        { year: 'desc' },
+        { month: 'desc' }
+      ]
+    })
+
+    // If no previous record, unitsConsumed is 0 (treated as starting reading/baseline)
+    const unitsConsumed = lastRecord ? Math.max(0, reading - lastRecord.reading) : 0
     const totalCost = unitsConsumed * waterCostPerLitre
 
     const waterRecord = await prisma.waterRecord.upsert({
@@ -98,21 +116,63 @@ export async function POST(req: NextRequest) {
         flatId,
         month,
         year,
+        reading,
         unitsConsumed,
         costPerLitre: waterCostPerLitre,
         totalCost,
         isPaid: false
       },
       update: {
+        reading,
         unitsConsumed,
         totalCost
       }
     })
 
+    // Recalculate subsequent logs for this flat in case of out-of-order logs or edits
+    await recalculateWaterLogs(flatId)
+
     return NextResponse.json(waterRecord)
   } catch (error) {
     console.error('Register water reading error:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  }
+}
+
+export async function recalculateWaterLogs(flatId: string) {
+  // Get all water records for this flat, ordered chronologically
+  const records = await prisma.waterRecord.findMany({
+    where: { flatId },
+    orderBy: [
+      { year: 'asc' },
+      { month: 'asc' }
+    ]
+  })
+
+  // Recalculate units consumed and total cost for each record in the chain
+  for (let i = 0; i < records.length; i++) {
+    const current = records[i]
+    let unitsConsumed = 0
+    if (i > 0) {
+      const previous = records[i - 1]
+      unitsConsumed = Math.max(0, current.reading - previous.reading)
+    } else {
+      // First month reading is treated as baseline, so units consumed = 0
+      unitsConsumed = 0
+    }
+
+    const totalCost = unitsConsumed * current.costPerLitre
+
+    // Update if changed
+    if (current.unitsConsumed !== unitsConsumed || current.totalCost !== totalCost) {
+      await prisma.waterRecord.update({
+        where: { id: current.id },
+        data: {
+          unitsConsumed,
+          totalCost
+        }
+      })
+    }
   }
 }
 
@@ -147,11 +207,18 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized or invalid records' }, { status: 403 })
     }
 
+    const flatIdsToRecalculate = Array.from(new Set(records.map(rec => rec.flatId)))
+
     await prisma.waterRecord.deleteMany({
       where: {
         id: { in: ids }
       }
     })
+
+    // Recalculate for each affected flat
+    for (const flatId of flatIdsToRecalculate) {
+      await recalculateWaterLogs(flatId)
+    }
 
     return NextResponse.json({ success: true, deleted: ids.length })
   } catch (error) {

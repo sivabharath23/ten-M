@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
+import { recalculateWaterLogs } from '../route'
 
 async function checkOwnership(waterRecordId: string, userId: string) {
   const record = await prisma.waterRecord.findUnique({
@@ -60,9 +61,19 @@ export async function DELETE(
     const isOwner = await checkOwnership(id, user.userId)
     if (!isOwner) return NextResponse.json({ error: 'Not Found' }, { status: 404 })
 
+    // Find the record to get flatId
+    const record = await prisma.waterRecord.findUnique({
+      where: { id },
+      select: { flatId: true }
+    })
+
     await prisma.waterRecord.delete({
       where: { id }
     })
+
+    if (record) {
+      await recalculateWaterLogs(record.flatId)
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

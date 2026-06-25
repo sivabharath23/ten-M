@@ -30,6 +30,7 @@ export default function SettingsPage() {
       lateFeeAmount: 0.0,
       lateFeeGraceDays: 5,
       maxFloors: 10,
+      noticePeriod: 30,
     },
   })
 
@@ -46,6 +47,7 @@ export default function SettingsPage() {
           lateFeeAmount: data.lateFeeAmount,
           lateFeeGraceDays: data.lateFeeGraceDays,
           maxFloors: data.maxFloors ?? 10,
+          noticePeriod: data.noticePeriod ?? 30,
         })
       }
     } catch {
@@ -157,6 +159,18 @@ export default function SettingsPage() {
             />
             <p className="text-[11px] text-slate-400 font-semibold -mt-2">
               Defines the highest floor select option available when registering or modifying flat units (e.g. 10 allows selecting from Ground up to 10th floor).
+            </p>
+
+            <Input
+              id="noticePeriod"
+              type="number"
+              label="Notice Period (Days)"
+              placeholder="e.g. 30"
+              error={errors.noticePeriod?.message}
+              {...register('noticePeriod', { valueAsNumber: true })}
+            />
+            <p className="text-[11px] text-slate-400 font-semibold -mt-2">
+              The contract termination notice period (in days) required by either party (tenant or landlord).
             </p>
           </Card>
 

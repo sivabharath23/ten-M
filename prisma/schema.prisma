@@ -33,6 +33,7 @@ model Settings {
   lateFeeAmount         Float    @default(0.0)
   lateFeeGraceDays      Int      @default(5)
   maxFloors             Int      @default(10)
+  noticePeriod          Int      @default(30)
   updatedAt             DateTime @updatedAt
 }
 
@@ -97,6 +98,7 @@ model Tenant {
   idProofType     String?
   idProofNumber   String?
   idProofUrl      String?
+  rentalAgreementUrl String?
   joiningDate     DateTime
   currentRent     Float
   advanceAmount   Float           @default(0)
@@ -152,6 +154,7 @@ model WaterRecord {
   flat          Flat     @relation(fields: [flatId], references: [id])
   month         Int
   year          Int
+  reading       Float    @default(0)
   unitsConsumed Float    // in litres
   costPerLitre  Float    // snapshot rate from settings
   totalCost     Float    // computed: units * costPerLitre

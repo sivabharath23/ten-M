@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid tenant fields' }, { status: 400 })
     }
 
-    const { flatId, name, phone, email, idProofType, idProofNumber, idProofUrl, joiningDate, currentRent, advanceAmount } = parsed.data
+    const { flatId, name, phone, email, idProofType, idProofNumber, idProofUrl, rentalAgreementUrl, joiningDate, currentRent, advanceAmount } = parsed.data
 
     // 1. Verify ownership and occupancy of the flat
     const flat = await prisma.flat.findFirst({
@@ -91,6 +91,7 @@ export async function POST(req: NextRequest) {
           idProofType,
           idProofNumber,
           idProofUrl,
+          rentalAgreementUrl,
           joiningDate: joiningDateTime,
           currentRent,
           advanceAmount,
