@@ -9,13 +9,15 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { Building2, Receipt, Droplet, TrendingUp, Sparkles, ShieldCheck, ArrowRight } from 'lucide-react'
+import { Building2, Receipt, Droplet, TrendingUp, Sparkles, ArrowRight, Mail, Lock, Eye, EyeOff, ShieldCheck } from 'lucide-react'
 
 type LoginFormInputs = typeof loginSchema._output
 
 export default function LoginPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(true)
 
   const {
     register,
@@ -41,14 +43,14 @@ export default function LoginPage() {
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Invalid credentials')
+        throw new Error(result.error || 'Invalid email or password')
       }
 
-      toast.success('Signed in successfully!')
+      toast.success('Welcome back! Signed in successfully.')
       router.push('/dashboard')
       router.refresh()
     } catch (error: any) {
-      toast.error(error.message || 'Something went wrong')
+      toast.error(error.message || 'Authentication failed. Please check your credentials.')
     } finally {
       setIsLoading(false)
     }
@@ -57,11 +59,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-slate-50 font-sans text-slate-850 relative overflow-hidden">
 
-      {/* Background Soft Pastel Glows for Right Side */}
+      {/* Background Soft Pastel Glows */}
       <div className="absolute top-[-20%] left-[40%] w-[600px] h-[600px] rounded-full bg-brand-500/5 blur-[120px] -z-10 animate-pulse duration-[8s]" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[700px] h-[700px] rounded-full bg-indigo-500/5 blur-[140px] -z-10 animate-pulse duration-[12s]" />
 
-      {/* Grid Pattern Overlay for Right Side */}
+      {/* Grid Pattern Overlay */}
       <div className="absolute inset-0 left-0 lg:left-[45%] bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-35 -z-10" />
 
       {/* Left Column: Premium Dark Presentation Side */}
@@ -72,7 +74,7 @@ export default function LoginPage() {
         <div className="absolute bottom-[-15%] right-[-10%] w-[650px] h-[650px] rounded-full bg-indigo-600/20 blur-[150px] -z-10 animate-pulse-slow" />
         <div className="absolute top-[35%] left-[20%] w-[350px] h-[350px] rounded-full bg-cyan-600/10 blur-[110px] -z-10" />
 
-        {/* Dynamic Space Grid Overlay SVG (Sharp, beautiful orbital grid) */}
+        {/* Dynamic Space Grid Overlay SVG */}
         <svg className="absolute inset-0 w-full h-full opacity-35 -z-10 [mask-image:radial-gradient(ellipse_at_center,black_75%,transparent_100%)]" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
           <g opacity="0.4">
             <circle cx="400" cy="400" r="320" stroke="url(#paint0_linear)" strokeWidth="1.5" strokeDasharray="10 15" />
@@ -107,121 +109,152 @@ export default function LoginPage() {
           </defs>
         </svg>
 
-        {/* Interactive Floating Nodes in Left Side */}
+        {/* Interactive Floating Nodes */}
         <div className="absolute top-[22%] left-[32%] w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)] animate-pulse" />
         <div className="absolute top-[63%] left-[68%] w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.8)] animate-pulse-slow" />
         <div className="absolute top-[38%] left-[54%] w-2.5 h-2.5 rounded-full bg-pink-400 shadow-[0_0_14px_rgba(244,114,182,0.8)] animate-pulse" />
 
         {/* Logo Header */}
         <div className="flex items-center gap-3 relative z-10 mb-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-500 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/25">
-            <Building2 className="h-5 w-5" />
+          <div className="h-11 w-11 rounded-2xl bg-gradient-to-tr from-brand-500 via-indigo-500 to-cyan-400 flex items-center justify-center text-white shadow-lg shadow-brand-500/25 ring-1 ring-white/20">
+            <Building2 className="h-6 w-6" />
           </div>
           <div className="flex flex-col">
-            <span className="text-lg font-black tracking-wider text-white leading-none">TenM</span>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Tenant Management</span>
+            <span className="text-xl font-black tracking-wider text-white leading-none">TenM</span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Tenant & Estate Engine</span>
           </div>
         </div>
 
         {/* Features Content */}
         <div className="space-y-8 my-auto max-w-md relative z-10">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-500/10 border border-brand-500/20 rounded-full text-brand-400 text-xs font-bold tracking-wide">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 bg-brand-500/10 border border-brand-500/20 rounded-full text-brand-400 text-xs font-bold tracking-wide">
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-              <span>Next-Gen Operations Hub</span>
+              <span>Property Operations Operating System</span>
             </div>
             <h2 className="text-4xl font-extrabold tracking-tight text-white leading-tight bg-gradient-to-br from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
-              Simplified Property & Tenant Management
+              Streamlined Real Estate & Tenant Management
             </h2>
-            <p className="text-slate-400 text-sm font-semibold leading-relaxed">
-              Automate rent collection, track volumetric water utility consumption, and streamline annual lease revisions in one platform.
+            <p className="text-slate-400 text-sm font-medium leading-relaxed">
+              Automate rent collection cycles, monitor volumetric utility billing, and execute annual lease revisions seamlessly.
             </p>
           </div>
 
           <div className="space-y-4">
             {/* Feature Tile 1 */}
-            <div className="flex gap-4 p-4 bg-white/[0.02] border border-white/[0.05] shadow-[0_8px_30px_rgba(0,0,0,0.2)] rounded-2xl hover:bg-white/[0.04] hover:border-white/[0.08] hover:-translate-y-0.5 transition-all duration-300">
+            <div className="flex gap-4 p-4 bg-white/[0.02] border border-white/[0.05] shadow-[0_8px_30px_rgba(0,0,0,0.2)] rounded-2xl hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300">
               <div className="h-10 w-10 shrink-0 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 flex items-center justify-center">
                 <Receipt className="h-5 w-5" />
               </div>
               <div className="space-y-0.5">
-                <h4 className="text-sm font-bold text-slate-200">Rent & Late Fee Tracking</h4>
-                <p className="text-xs text-slate-400 leading-relaxed font-semibold">Record monthly payments, note partial collections, and apply automated grace days.</p>
+                <h4 className="text-sm font-bold text-slate-200">Rent & Collection Tracking</h4>
+                <p className="text-xs text-slate-400 leading-relaxed font-medium">Log payments, partial dues, and automated late fee grace periods.</p>
               </div>
             </div>
 
             {/* Feature Tile 2 */}
-            <div className="flex gap-4 p-4 bg-white/[0.02] border border-white/[0.05] shadow-[0_8px_30px_rgba(0,0,0,0.2)] rounded-2xl hover:bg-white/[0.04] hover:border-white/[0.08] hover:-translate-y-0.5 transition-all duration-300">
+            <div className="flex gap-4 p-4 bg-white/[0.02] border border-white/[0.05] shadow-[0_8px_30px_rgba(0,0,0,0.2)] rounded-2xl hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300">
               <div className="h-10 w-10 shrink-0 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center">
                 <Droplet className="h-5 w-5" />
               </div>
               <div className="space-y-0.5">
-                <h4 className="text-sm font-bold text-slate-200">Water Consumption Billing</h4>
-                <p className="text-xs text-slate-400 leading-relaxed font-semibold">Log consumption per flat and automatically compute utility bills with set tariffs.</p>
+                <h4 className="text-sm font-bold text-slate-200">Utility Meter Billing</h4>
+                <p className="text-xs text-slate-400 leading-relaxed font-medium">Log water sub-meter readings and compute automated tenant invoices.</p>
               </div>
             </div>
 
             {/* Feature Tile 3 */}
-            <div className="flex gap-4 p-4 bg-white/[0.02] border border-white/[0.05] shadow-[0_8px_30px_rgba(0,0,0,0.2)] rounded-2xl hover:bg-white/[0.04] hover:border-white/[0.08] hover:-translate-y-0.5 transition-all duration-300">
+            <div className="flex gap-4 p-4 bg-white/[0.02] border border-white/[0.05] shadow-[0_8px_30px_rgba(0,0,0,0.2)] rounded-2xl hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300">
               <div className="h-10 w-10 shrink-0 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
                 <TrendingUp className="h-5 w-5" />
               </div>
               <div className="space-y-0.5">
-                <h4 className="text-sm font-bold text-slate-200">Rent Appraisal Engine</h4>
-                <p className="text-xs text-slate-400 leading-relaxed font-semibold">Automate annual lease revision cycles cleanly on tenant anniversary dates.</p>
+                <h4 className="text-sm font-bold text-slate-200">Automated Annual Hikes</h4>
+                <p className="text-xs text-slate-400 leading-relaxed font-medium">Schedule rent appraisals automatically based on tenant occupancy dates.</p>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Security Footer Note */}
+        <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+          <ShieldCheck className="h-4 w-4 text-emerald-400" />
+          <span>Encrypted Session & Cookie Auth Active</span>
+        </div>
       </div>
 
-      {/* Right Column: Premium Auth Form Card Container */}
+      {/* Right Column: Auth Form Card Container */}
       <div className="flex-1 flex items-center justify-center p-6 md:p-12 relative">
 
         {/* Main Form Card */}
-        <div className="w-full max-w-md bg-white border border-slate-100 shadow-[0_30px_60px_rgba(15,23,42,0.06)] rounded-[32px] p-8 md:p-10 space-y-8 relative z-10 transition-all duration-300 overflow-hidden">
+        <div className="w-full max-w-md bg-white border border-slate-200/80 shadow-[0_25px_50px_-12px_rgba(15,23,42,0.08)] rounded-[32px] p-8 md:p-10 space-y-8 relative z-10 transition-all duration-300">
 
           {/* Accent colored line at the top */}
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brand-600 via-indigo-600 to-emerald-500" />
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brand-600 via-indigo-600 to-cyan-500 rounded-t-[32px]" />
 
-          {/* Header titles - Centered properly */}
+          {/* Header titles */}
           <div className="space-y-2 text-center">
-            {/* Small Brand Logo for Mobile/Desktop Header */}
-            <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 mx-auto mb-4 hover:rotate-6 transition-transform duration-300">
+            <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 mx-auto mb-3 hover:scale-105 transition-transform duration-300">
               <Building2 className="h-6 w-6" />
             </div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              Welcome Back
+              Sign In to TenM
             </h1>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-              Sign in to manage your real estate operations
+            <p className="text-xs font-semibold text-slate-500">
+              Enter your credentials to manage properties & tenants
             </p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <Input
               id="email"
               type="email"
               label="Email Address"
-              placeholder="you@example.com"
+              placeholder="admin@property.com"
+              icon={<Mail className="h-4 w-4" />}
               error={errors.email?.message}
-              className="!bg-slate-50/50 hover:!border-slate-300 !border-slate-200/80 !text-slate-900 focus:!border-brand-500 focus:!ring-brand-500/10 focus:!bg-white !rounded-xl !py-3.5 !text-sm transition-all duration-300 shadow-sm"
+              className="!bg-slate-50/70 hover:!border-slate-300 !border-slate-200 !text-slate-900 focus:!border-brand-500 focus:!ring-brand-500/10 focus:!bg-white !rounded-xl !py-3 !text-sm transition-all duration-200 shadow-xs"
               {...register('email')}
             />
 
             <Input
               id="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               label="Password"
               placeholder="••••••••"
+              icon={<Lock className="h-4 w-4" />}
+              endIcon={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="p-1 text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              }
               error={errors.password?.message}
-              className="!bg-slate-50/50 hover:!border-slate-300 !border-slate-200/80 !text-slate-900 focus:!border-brand-500 focus:!ring-brand-500/10 focus:!bg-white !rounded-xl !py-3.5 !text-sm transition-all duration-300 shadow-sm"
+              className="!bg-slate-50/70 hover:!border-slate-300 !border-slate-200 !text-slate-900 focus:!border-brand-500 focus:!ring-brand-500/10 focus:!bg-white !rounded-xl !py-3 !text-sm transition-all duration-200 shadow-xs"
               {...register('password')}
             />
 
+            {/* Remember Me and Forgot Password */}
+            <div className="flex items-center justify-between text-xs pt-1">
+              <label className="flex items-center gap-2 cursor-pointer text-slate-600 font-medium select-none">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 h-4 w-4 cursor-pointer"
+                />
+                <span>Remember session</span>
+              </label>
+              <span className="text-slate-400 text-[11px] font-medium">Secure SSL JWT</span>
+            </div>
+
             <Button
               type="submit"
-              className="w-full py-3.5 text-xs font-extrabold uppercase tracking-widest bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white shadow-lg shadow-brand-500/20 hover:shadow-brand-500/35 rounded-xl transition-all duration-300 active:scale-98 cursor-pointer mt-4 border-0"
+              className="w-full py-3.5 text-xs font-extrabold uppercase tracking-widest bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 rounded-xl transition-all duration-200 active:scale-98 cursor-pointer mt-4 border-0"
               isLoading={isLoading}
             >
               Sign In
@@ -229,15 +262,15 @@ export default function LoginPage() {
           </form>
 
           {/* Redirection Link Card */}
-          <div className="text-center pt-5 border-t border-slate-100 mt-0">
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2.5">
-              New to the platform?
+          <div className="text-center pt-5 border-t border-slate-100">
+            <p className="text-[11px] text-slate-400 font-semibold mb-3">
+              Don't have an admin or landlord account?
             </p>
             <Link
               href="/register"
-              className="inline-flex items-center gap-1.5 justify-center w-full px-4 py-3 bg-slate-50 hover:bg-slate-100 border border-slate-100 text-slate-600 hover:text-slate-800 font-extrabold text-xs rounded-xl transition-all tracking-wide hover:scale-[1.01] active:scale-99"
+              className="inline-flex items-center gap-2 justify-center w-full px-4 py-3 bg-slate-50 hover:bg-slate-100 border border-slate-200/70 text-slate-700 font-bold text-xs rounded-xl transition-all duration-200 hover:border-slate-300"
             >
-              <span>Register Property Owner/Admin</span>
+              <span>Register New Owner Account</span>
               <ArrowRight className="h-3.5 w-3.5 text-brand-600" />
             </Link>
           </div>
@@ -246,3 +279,4 @@ export default function LoginPage() {
     </div>
   )
 }
+

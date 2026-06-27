@@ -13,8 +13,9 @@ import { Modal } from '@/components/ui/Modal'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { toast } from 'sonner'
-import { Droplets, Plus, Calendar, ToggleLeft, Trash2 } from 'lucide-react'
+import { Droplets, Plus, Calendar, ToggleLeft, Trash2, Camera, Sparkles } from 'lucide-react'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
+import { WaterMeterOCRModal } from '@/components/water/WaterMeterOCRModal'
 
 type WaterFormInputs = typeof waterRecordSchema._output
 
@@ -89,6 +90,7 @@ export default function WaterBillingPage() {
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false)
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
   const [lastReading, setLastReading] = useState<number | null>(null)
+  const [isOCRModalOpen, setIsOCRModalOpen] = useState(false)
 
   const {
     register,
@@ -624,28 +626,60 @@ export default function WaterBillingPage() {
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-[11px] text-blue-800 font-bold leading-normal">
                 🔔 No initial reading found for this flat! You must first record the starting/initial meter reading to establish a baseline before logging monthly water bills.
               </div>
-              <Input
-                id="reading"
-                type="number"
-                label="Initial Starting Meter Reading (L)"
-                placeholder="e.g. 10000"
-                error={errors.reading?.message}
-                {...register('reading', { valueAsNumber: true })}
-              />
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="reading" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Initial Starting Meter Reading (L)
+                  </label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsOCRModalOpen(true)}
+                    className="px-2.5 py-1 text-[11px] font-bold text-brand-600 border-brand-200 bg-brand-50/50 hover:bg-brand-100/70 gap-1.5 cursor-pointer rounded-lg"
+                  >
+                    <Camera className="h-3 w-3 text-brand-600" />
+                    <span>AI OCR Scan Photo</span>
+                  </Button>
+                </div>
+                <Input
+                  id="reading"
+                  type="number"
+                  placeholder="e.g. 10000"
+                  error={errors.reading?.message}
+                  {...register('reading', { valueAsNumber: true })}
+                />
+              </div>
               <p className="text-[11px] text-slate-400 font-semibold -mt-2">
                 Note: Usage and bill amount for this initial baseline log will be ₹0.
               </p>
             </div>
           ) : (
             <div className="space-y-4">
-              <Input
-                id="reading"
-                type="number"
-                label="Current Water Meter Reading (Litres)"
-                placeholder="e.g. 12500"
-                error={errors.reading?.message}
-                {...register('reading', { valueAsNumber: true })}
-              />
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="reading" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Current Water Meter Reading (Litres)
+                  </label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsOCRModalOpen(true)}
+                    className="px-2.5 py-1 text-[11px] font-bold text-brand-600 border-brand-200 bg-brand-50/50 hover:bg-brand-100/70 gap-1.5 cursor-pointer rounded-lg"
+                  >
+                    <Camera className="h-3.5 w-3.5 text-brand-600 animate-pulse" />
+                    <span>AI OCR Scan Photo</span>
+                  </Button>
+                </div>
+                <Input
+                  id="reading"
+                  type="number"
+                  placeholder="e.g. 12500"
+                  error={errors.reading?.message}
+                  {...register('reading', { valueAsNumber: true })}
+                />
+              </div>
               <p className="text-[11px] text-emerald-600 font-bold -mt-2">
                 Previous reading: {lastReading.toLocaleString()} L. Calculated usage: {watch('reading') ? Math.max(0, Number(watch('reading')) - lastReading).toLocaleString() : 0} L.
               </p>
@@ -688,6 +722,12 @@ export default function WaterBillingPage() {
         cancelText="Cancel"
         type="danger"
         isLoading={isBulkDeleting}
+      />
+
+      <WaterMeterOCRModal
+        isOpen={isOCRModalOpen}
+        onClose={() => setIsOCRModalOpen(false)}
+        onDetectedValue={(val) => setValue('reading', val)}
       />
     </div>
   )
