@@ -3,8 +3,9 @@
 import React, { useState, useRef } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
-import { createWorker } from 'tesseract.js'
-import { Camera, Upload, RefreshCw, CheckCircle2, AlertCircle, Sparkles, Binary, Image as ImageIcon } from 'lucide-react'
+import { Input } from '@/components/ui/Input'
+import { createWorker, PSM } from 'tesseract.js'
+import { Camera, Upload, RefreshCw, CheckCircle2, AlertCircle, Sparkles, Binary, Edit3, Sliders } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface WaterMeterOCRModalProps {
@@ -19,7 +20,7 @@ export function WaterMeterOCRModal({ isOpen, onClose, onDetectedValue }: WaterMe
   const [progress, setProgress] = useState<number>(0)
   const [statusText, setStatusText] = useState<string>('')
   const [detectedNumbers, setDetectedNumbers] = useState<number[]>([])
-  const [selectedNumber, setSelectedNumber] = useState<number | null>(null)
+  const [manualInputValue, setManualInputValue] = useState<string>('')
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
@@ -36,89 +37,148 @@ export function WaterMeterOCRModal({ isOpen, onClose, onDetectedValue }: WaterMe
     reader.onload = () => {
       const src = reader.result as string
       setImageSrc(src)
-      performOCR(src)
+      performOCRWithPreprocessing(src)
     }
     reader.readAsDataURL(file)
   }
 
-  const performOCR = async (image: string) => {
+  // Pre-process image on canvas to boost contrast & binarize for meter dial dials
+  const preprocessImage = (imageSrc: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          resolve(imageSrc)
+          return
+        }
+
+        canvas.width = img.width
+        canvas.height = img.height
+        ctx.drawImage(img, 0, 0)
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+        const data = imageData.data
+
+        // Convert to grayscale & contrast enhancement
+        const contrast = 1.4 // Contrast boost multiplier
+        const intercept = 128 * (1 - contrast)
+
+        for (let i = 0; i < data.length; i += 4) {
+          // Grayscale weighting (r * 0.299 + g * 0.587 + b * 0.114)
+          let gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114
+          // Apply contrast adjustment
+          gray = contrast * gray + intercept
+          // Clamp to 0-255
+          gray = Math.max(0, Math.min(255, gray))
+
+          // Simple thresholding for high contrast black/white
+          const threshold = 130
+          const finalVal = gray > threshold ? 255 : 0
+
+          data[i] = finalVal     // R
+          data[i + 1] = finalVal // G
+          data[i + 2] = finalVal // B
+        }
+
+        ctx.putImageData(imageData, 0, 0)
+        resolve(canvas.toDataURL('image/png'))
+      }
+      img.onerror = () => resolve(imageSrc)
+      img.src = imageSrc
+    })
+  }
+
+  const performOCRWithPreprocessing = async (originalImageSrc: string) => {
     setIsScanning(true)
     setProgress(0)
-    setStatusText('Initializing OCR engine...')
+    setStatusText('Optimizing image contrast for meter dial...')
     setDetectedNumbers([])
-    setSelectedNumber(null)
+    setManualInputValue('')
 
     try {
+      // Step 1: Preprocess image for OCR
+      const processedImageSrc = await preprocessImage(originalImageSrc)
+
+      // Step 2: Initialize Tesseract worker
+      setStatusText('Initializing OCR vision engine...')
       const worker = await createWorker('eng', 1, {
         logger: (m) => {
           if (m.status === 'recognizing text') {
-            setStatusText('Analyzing water meter numbers...')
+            setStatusText('Extracting digits from water meter dial...')
             setProgress(Math.round(m.progress * 100))
           } else if (m.status === 'loading tesseract core') {
-            setStatusText('Loading vision engine...')
-          } else if (m.status === 'initializing tesseract') {
-            setStatusText('Preparing analyzer...')
+            setStatusText('Loading OCR engine...')
           }
         },
       })
 
-      // Set parameters to optimize for digits
+      // Set parameters for digit extraction (fixed missing 3!)
       await worker.setParameters({
-        tessedit_char_whitelist: '012456789',
+        tessedit_char_whitelist: '0123456789',
+        tessedit_pageseg_mode: PSM.SINGLE_LINE, // Single line layout for meter counters
       })
 
-      const { data: { text } } = await worker.recognize(image)
+      // Run OCR on processed high-contrast image
+      const resProcessed = await worker.recognize(processedImageSrc)
+      
+      // Run fallback OCR on original image to capture raw colors
+      await worker.setParameters({
+        tessedit_pageseg_mode: PSM.AUTO,
+      })
+      const resOriginal = await worker.recognize(originalImageSrc)
       await worker.terminate()
 
-      // Extract all sequences of 3 to 8 digits
-      const matches = text.match(/\b\d{3,8}\b/g)
+      const combinedText = `${resProcessed.data.text} ${resOriginal.data.text}`
+
+      // Extract numeric digit sequences (3 to 8 digits)
+      const matches = combinedText.match(/\b\d{3,8}\b/g)
       
+      let candidateNumbers: number[] = []
       if (matches && matches.length > 0) {
-        // Convert to numbers and filter duplicates
-        const nums = Array.from(new Set(matches.map(n => parseInt(n, 10)))).filter(n => !isNaN(n))
-        setDetectedNumbers(nums)
-        if (nums.length > 0) {
-          // Default select the largest digit sequence (usually the cumulative meter reading)
-          const bestCandidate = Math.max(...nums)
-          setSelectedNumber(bestCandidate)
-          toast.success(`Detected ${nums.length} candidate meter values!`)
-        } else {
-          toast.warning('No clear meter reading digits detected. Please try a clearer picture.')
-        }
+        candidateNumbers = Array.from(new Set(matches.map(n => parseInt(n, 10)))).filter(n => !isNaN(n) && n >= 0)
       } else {
-        // Fallback: extract all digits from whole text
-        const digitsOnly = text.replace(/\D/g, '')
+        // Fallback: extract all digits concatenated
+        const digitsOnly = combinedText.replace(/\D/g, '')
         if (digitsOnly.length >= 3) {
-          const val = parseInt(digitsOnly.slice(0, 7), 10)
-          setDetectedNumbers([val])
-          setSelectedNumber(val)
-          toast.success('Extracted meter numbers successfully!')
-        } else {
-          toast.error('Could not auto-detect numeric reading from this image. Try taking a closer photo of the meter dial.')
+          candidateNumbers = [parseInt(digitsOnly.slice(0, 7), 10)]
         }
       }
+
+      setDetectedNumbers(candidateNumbers)
+      if (candidateNumbers.length > 0) {
+        // Pick the largest candidate (cumulative reading) or first candidate
+        const bestCandidate = Math.max(...candidateNumbers)
+        setManualInputValue(bestCandidate.toString())
+        toast.success(`Extracted ${candidateNumbers.length} meter reading candidate(s)!`)
+      } else {
+        toast.warning('No clear digits auto-detected. You can type or adjust the exact reading below.')
+      }
     } catch (err) {
-      console.error('OCR Error:', err)
-      toast.error('Error scanning image. Please ensure image is clear.')
+      console.error('OCR Scanning Error:', err)
+      toast.error('Error scanning image. Please ensure photo is clear and legible.')
     } finally {
       setIsScanning(false)
     }
   }
 
   const handleApply = () => {
-    if (selectedNumber !== null) {
-      onDetectedValue(selectedNumber)
-      toast.success(`Meter reading updated to ${selectedNumber.toLocaleString()} L!`)
+    const num = parseInt(manualInputValue, 10)
+    if (!isNaN(num) && num >= 0) {
+      onDetectedValue(num)
+      toast.success(`Meter reading updated to ${num.toLocaleString()} L!`)
       onClose()
     } else {
-      toast.error('Please select or verify a detected number.')
+      toast.error('Please enter a valid positive meter reading number.')
     }
   }
 
   const handleReset = () => {
     setImageSrc(null)
     setDetectedNumbers([])
-    setSelectedNumber(null)
+    setManualInputValue('')
     setProgress(0)
     setIsScanning(false)
   }
@@ -127,7 +187,7 @@ export function WaterMeterOCRModal({ isOpen, onClose, onDetectedValue }: WaterMe
     <Modal isOpen={isOpen} onClose={onClose} title="AI Water Meter OCR Scanner">
       <div className="space-y-5">
         
-        {/* Hidden inputs */}
+        {/* Hidden file inputs */}
         <input
           type="file"
           ref={fileInputRef}
@@ -150,10 +210,10 @@ export function WaterMeterOCRModal({ isOpen, onClose, onDetectedValue }: WaterMe
               <Sparkles className="h-7 w-7 animate-pulse text-brand-600" />
             </div>
             <h3 className="text-base font-extrabold text-slate-800 mb-1">
-              Capture or Upload Meter Photo
+              Capture or Upload Water Meter Photo
             </h3>
             <p className="text-xs text-slate-500 max-w-xs mx-auto mb-6">
-              Take a clear picture of the physical water meter dial. Our AI scanner will automatically extract the reading value.
+              Take a clear picture of the physical water meter counter dial. Our enhanced AI scanner will extract the reading digits automatically.
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center gap-3">
@@ -214,52 +274,65 @@ export function WaterMeterOCRModal({ isOpen, onClose, onDetectedValue }: WaterMe
                   className="absolute top-3 right-3 bg-slate-900/80 hover:bg-slate-900 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg backdrop-blur-md transition-all cursor-pointer flex items-center gap-1 border border-white/10"
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
-                  <span>Retake</span>
+                  <span>Retake Photo</span>
                 </button>
               )}
             </div>
 
-            {/* Results Section */}
+            {/* Results & Verification Section */}
             {!isScanning && (
-              <div className="space-y-3 bg-slate-50 border border-slate-200/80 rounded-2xl p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Binary className="h-4 w-4 text-brand-600" />
-                    <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
-                      Detected Meter Values
-                    </span>
-                  </div>
-                  {detectedNumbers.length > 0 && (
-                    <span className="text-[10px] font-bold text-slate-400">
-                      Click to select
-                    </span>
-                  )}
-                </div>
-
-                {detectedNumbers.length > 0 ? (
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {detectedNumbers.map((num) => (
-                      <button
-                        key={num}
-                        type="button"
-                        onClick={() => setSelectedNumber(num)}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
-                          selectedNumber === num
-                            ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20 ring-2 ring-brand-500/30 scale-105'
-                            : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-100/70'
-                        }`}
-                      >
-                        {selectedNumber === num && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
-                        <span>{num.toLocaleString()} L</span>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 p-3 rounded-xl border border-amber-200/60 font-semibold">
-                    <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />
-                    <span>No clear numbers extracted. Try taking another photo with direct light on the meter numbers.</span>
+              <div className="space-y-4 bg-slate-50 border border-slate-200/80 rounded-2xl p-4">
+                
+                {/* Candidates selection */}
+                {detectedNumbers.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Binary className="h-4 w-4 text-brand-600" />
+                        <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
+                          Detected Candidates
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-400">Click to fill value</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {detectedNumbers.map((num) => (
+                        <button
+                          key={num}
+                          type="button"
+                          onClick={() => setManualInputValue(num.toString())}
+                          className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                            manualInputValue === num.toString()
+                              ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20 ring-2 ring-brand-500/30'
+                              : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-100/70'
+                          }`}
+                        >
+                          {manualInputValue === num.toString() && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
+                          <span>{num.toLocaleString()} L</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
+
+                {/* Manual Edit Field */}
+                <div className="space-y-1.5 pt-1 border-t border-slate-200/60">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                    <Edit3 className="h-3.5 w-3.5 text-slate-500" />
+                    <span>Confirm Meter Reading Value (Litres)</span>
+                  </div>
+                  <Input
+                    id="ocrVerifiedInput"
+                    type="number"
+                    value={manualInputValue}
+                    onChange={(e) => setManualInputValue(e.target.value)}
+                    placeholder="e.g. 12500"
+                    className="!bg-white !font-black !text-base !py-2.5 !text-slate-900 shadow-xs"
+                  />
+                  <p className="text-[11px] text-slate-400 font-medium">
+                    Verify or adjust the numbers extracted from the water meter dial before applying to the form.
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -274,10 +347,10 @@ export function WaterMeterOCRModal({ isOpen, onClose, onDetectedValue }: WaterMe
             <Button
               type="button"
               onClick={handleApply}
-              disabled={selectedNumber === null}
+              disabled={!manualInputValue}
               className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-5 rounded-xl cursor-pointer shadow-sm"
             >
-              Apply {selectedNumber ? `${selectedNumber.toLocaleString()} L` : 'Value'} to Form
+              Apply {manualInputValue ? `${parseInt(manualInputValue, 10).toLocaleString()} L` : 'Value'} to Form
             </Button>
           )}
         </div>
