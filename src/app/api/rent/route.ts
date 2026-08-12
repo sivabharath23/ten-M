@@ -43,7 +43,28 @@ export async function GET(req: NextRequest) {
       orderBy: { flat: { flatNumber: 'asc' } }
     })
 
-    return NextResponse.json(rentRecords)
+    const waterRecords = await prisma.waterRecord.findMany({
+      where: {
+        month,
+        year,
+        flat: {
+          property: {
+            userId: user.userId,
+            status: 'ACTIVE',
+            ...(propertyId && propertyId !== 'all' ? { id: propertyId } : {})
+          }
+        }
+      }
+    })
+
+    const waterRecordMap = new Map(waterRecords.map(w => [w.flatId, w]))
+
+    const recordsWithWater = rentRecords.map(r => ({
+      ...r,
+      waterRecord: waterRecordMap.get(r.flatId) || null
+    }))
+
+    return NextResponse.json(recordsWithWater)
   } catch (error) {
     console.error('Fetch rent records error:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })

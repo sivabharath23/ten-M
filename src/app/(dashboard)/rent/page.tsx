@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { toast } from 'sonner'
-import { Banknote, RefreshCw, Calendar, Edit3, Building2, Trash2 } from 'lucide-react'
+import { Banknote, RefreshCw, Calendar, Edit3, Building2, Trash2, Download } from 'lucide-react'
 
 interface Property {
   id: string
@@ -38,6 +38,16 @@ interface RentRecord {
       name: string
     }
   }
+  waterRecord?: {
+    id: string
+    reading: number
+    unitsConsumed: number
+    costPerLitre: number
+    totalCost: number
+    isPaid: boolean
+    paidOn: string | null
+    notes: string | null
+  } | null
 }
 
 const MONTHS_LIST = [
@@ -103,7 +113,9 @@ export default function RentCollectionPage() {
     paidAmount: 0,
     paidOn: '',
     paymentMode: '',
-    notes: ''
+    notes: '',
+    payWaterBill: false,
+    waterPaidAmount: 0
   })
 
   // Years options for selector
@@ -174,6 +186,50 @@ export default function RentCollectionPage() {
     await handleGenerateRecords()
   }
 
+  const handleExportCSV = async () => {
+    try {
+      const response = await fetch(
+        `/api/reports?type=combined&month=${selectedMonth}&year=${selectedYear}&propertyId=${selectedPropertyId}`
+      )
+      if (!response.ok) throw new Error()
+      const data = await response.json()
+      if (!data || data.length === 0) {
+        toast.info('No records found to export for the selected filters.')
+        return
+      }
+
+      // Convert to CSV
+      const headers = Object.keys(data[0])
+      const csvRows = [
+        headers.join(','), // Header row
+        ...data.map((row: any) =>
+          headers
+            .map(fieldName => {
+              const val = row[fieldName]
+              const escaped = ('' + (val ?? '')).replace(/"/g, '""')
+              return `"${escaped}"`
+            })
+            .join(',')
+        )
+      ]
+      
+      const csvContent = csvRows.join('\n')
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.setAttribute('href', url)
+      const propertyName = getSelectedPropertyName().replace(/\s+/g, '_')
+      link.setAttribute('download', `rent_and_water_collection_${getSelectedMonthName()}_${selectedYear}_${propertyName}.csv`)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      
+      toast.success('CSV report exported successfully!')
+    } catch {
+      toast.error('Failed to export CSV report')
+    }
+  }
+
   const handleOpenUpdateModal = (rec: RentRecord) => {
     setSelectedRecord(rec)
     const recPaidOn = rec.paidOn ? new Date(rec.paidOn).toISOString().split('T')[0] : getTodayDateString()
@@ -182,7 +238,9 @@ export default function RentCollectionPage() {
       paidAmount: rec.status === 'PAID' ? rec.rentAmount : rec.paidAmount || rec.rentAmount,
       paidOn: recPaidOn,
       paymentMode: rec.paymentMode || 'Cash',
-      notes: rec.notes || ''
+      notes: rec.notes || '',
+      payWaterBill: rec.waterRecord ? rec.waterRecord.isPaid : false,
+      waterPaidAmount: rec.waterRecord ? rec.waterRecord.totalCost : 0
     })
     setIsUpdateModalOpen(true)
   }
@@ -200,7 +258,9 @@ export default function RentCollectionPage() {
           paidAmount: parseFloat(updateForm.paidAmount.toString()),
           paidOn: (updateForm.status === 'PAID' || updateForm.status === 'PARTIAL') && updateForm.paidOn ? new Date(updateForm.paidOn).toISOString() : null,
           paymentMode: (updateForm.status === 'PAID' || updateForm.status === 'PARTIAL') ? updateForm.paymentMode : null,
-          notes: updateForm.notes || null
+          notes: updateForm.notes || null,
+          payWaterBill: updateForm.payWaterBill,
+          waterPaidAmount: updateForm.payWaterBill ? parseFloat((updateForm.waterPaidAmount || 0).toString()) : 0
         })
       })
       if (!response.ok) throw new Error()
@@ -286,16 +346,27 @@ export default function RentCollectionPage() {
           <p className="text-xs font-semibold text-slate-400">Record, update, and generate monthly tenant rent charges</p>
         </div>
 
-        {/* Bulk generation button */}
-        <Button
-          onClick={() => setIsConfirmGenerateOpen(true)}
-          isLoading={isGenerating}
-          variant="primary"
-          className="shadow-md shadow-brand-500/10 gap-1.5 text-xs font-bold px-3.5 self-start sm:self-auto"
-        >
-          <RefreshCw className="h-4 w-4" />
-          <span>Generate Month's Bills</span>
-        </Button>
+        {/* Export CSV & Bulk generation buttons */}
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Button
+            onClick={handleExportCSV}
+            variant="outline"
+            className="border-slate-200 text-slate-700 hover:bg-slate-50 gap-1.5 text-xs font-bold px-3.5"
+          >
+            <Download className="h-4 w-4" />
+            <span>Export CSV</span>
+          </Button>
+
+          <Button
+            onClick={() => setIsConfirmGenerateOpen(true)}
+            isLoading={isGenerating}
+            variant="primary"
+            className="shadow-md shadow-brand-500/10 gap-1.5 text-xs font-bold px-3.5"
+          >
+            <RefreshCw className="h-4 w-4" />
+            <span>Generate Month's Bills</span>
+          </Button>
+        </div>
       </div>
 
       {/* Query Filters */}
@@ -420,7 +491,12 @@ export default function RentCollectionPage() {
                         />
                       </td>
                       <td className="px-5 py-4 font-bold text-slate-900">{rec.flat.flatNumber}</td>
-                      <td className="px-5 py-4 font-bold text-slate-800">{rec.tenant.name}</td>
+                      <td className="px-5 py-4 font-bold text-slate-800">
+                        <div>{rec.tenant.name}</div>
+                        <a href={`tel:${rec.tenant.phone}`} className="text-[10.5px] text-brand-600 hover:underline font-semibold block mt-0.5">
+                          {rec.tenant.phone}
+                        </a>
+                      </td>
                       <td className="px-5 py-4">{rec.flat.property.name}</td>
                       <td className="px-5 py-4">₹{rec.rentAmount.toLocaleString()}</td>
                       <td className="px-5 py-4 text-emerald-600">₹{rec.paidAmount.toLocaleString()}</td>
@@ -496,7 +572,10 @@ export default function RentCollectionPage() {
                 <div className="grid grid-cols-2 gap-y-2.5 gap-x-4 border-t border-b border-slate-100 py-3 text-xs">
                   <div>
                     <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Tenant</span>
-                    <span className="font-extrabold text-slate-800">{rec.tenant.name}</span>
+                    <span className="font-extrabold text-slate-800 block">{rec.tenant.name}</span>
+                    <a href={`tel:${rec.tenant.phone}`} className="text-[10.5px] text-brand-600 hover:underline font-semibold block mt-0.5">
+                      {rec.tenant.phone}
+                    </a>
                   </div>
                   <div>
                     <span className="text-slate-400 block font-bold text-[10px] uppercase tracking-wider mb-0.5">Rent Due</span>
@@ -603,6 +682,71 @@ export default function RentCollectionPage() {
             value={updateForm.notes}
             onChange={(e) => setUpdateForm({ ...updateForm, notes: e.target.value })}
           />
+
+          {/* Water Collection Section */}
+          <div className="border-t border-slate-100 pt-4 mt-4 space-y-4">
+            <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider">Water Bill Collection</h4>
+            
+            {selectedRecord?.waterRecord ? (
+              <div className="bg-slate-50 rounded-xl p-3 flex flex-col gap-2">
+                <div className="flex justify-between items-center text-xs">
+                  <div>
+                    <span className="text-slate-500 font-bold block">Water Bill (Month)</span>
+                    <span className="font-extrabold text-slate-800">₹{selectedRecord.waterRecord.totalCost.toLocaleString()}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 font-bold block mb-0.5">Status</span>
+                    <Badge variant={selectedRecord.waterRecord.isPaid ? 'paid' : 'pending'}>
+                      {selectedRecord.waterRecord.isPaid ? 'Paid' : 'Unpaid'}
+                    </Badge>
+                  </div>
+                </div>
+
+                {!selectedRecord.waterRecord.isPaid && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <input
+                      type="checkbox"
+                      id="payWaterBill"
+                      checked={updateForm.payWaterBill}
+                      onChange={(e) => setUpdateForm({ ...updateForm, payWaterBill: e.target.checked })}
+                      className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer h-4 w-4"
+                    />
+                    <label htmlFor="payWaterBill" className="text-xs font-bold text-slate-700 cursor-pointer">
+                      Collect water bill amount at the same time
+                    </label>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-[11px] font-semibold text-slate-400">
+                  No water bill record found for this month/year. You can record a water payment directly here:
+                </p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="payWaterBill"
+                    checked={updateForm.payWaterBill}
+                    onChange={(e) => setUpdateForm({ ...updateForm, payWaterBill: e.target.checked, waterPaidAmount: e.target.checked ? 0 : 0 })}
+                    className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer h-4 w-4"
+                  />
+                  <label htmlFor="payWaterBill" className="text-xs font-bold text-slate-700 cursor-pointer">
+                    Collect water bill amount (optional)
+                  </label>
+                </div>
+                {updateForm.payWaterBill && (
+                  <Input
+                    id="waterPaidAmount"
+                    type="number"
+                    label="Water Amount Collected (₹)"
+                    placeholder="Enter water bill amount"
+                    value={updateForm.waterPaidAmount || ''}
+                    onChange={(e) => setUpdateForm({ ...updateForm, waterPaidAmount: parseFloat(e.target.value) || 0 })}
+                  />
+                )}
+              </div>
+            )}
+          </div>
 
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="ghost" onClick={() => setIsUpdateModalOpen(false)}>

@@ -184,6 +184,126 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(data)
     }
 
+    if (reportType === 'combined' || reportType === 'rent-water') {
+      const rentRecords = await prisma.rentRecord.findMany({
+        where: {
+          ...(month ? { month } : {}),
+          ...(year ? { year } : {}),
+          flat: {
+            property: {
+              userId: user.userId,
+              status: 'ACTIVE',
+              ...(propertyId && propertyId !== 'all' ? { id: propertyId } : {})
+            }
+          }
+        },
+        include: {
+          tenant: { select: { name: true, phone: true } },
+          flat: { include: { property: { select: { name: true } } } }
+        },
+        orderBy: { flat: { flatNumber: 'asc' } }
+      })
+
+      const waterRecords = await prisma.waterRecord.findMany({
+        where: {
+          ...(month ? { month } : {}),
+          ...(year ? { year } : {}),
+          flat: {
+            property: {
+              userId: user.userId,
+              status: 'ACTIVE',
+              ...(propertyId && propertyId !== 'all' ? { id: propertyId } : {})
+            }
+          }
+        },
+        include: {
+          flat: { include: { property: { select: { name: true } } } }
+        },
+        orderBy: { flat: { flatNumber: 'asc' } }
+      })
+
+      const flatMap = new Map<string, any>()
+
+      // Process rent records first
+      for (const r of rentRecords) {
+        flatMap.set(r.flatId, {
+          flatId: r.flatId,
+          flatNumber: r.flat.flatNumber,
+          propertyName: r.flat.property.name,
+          tenantName: r.tenant.name,
+          tenantPhone: r.tenant.phone,
+          month: r.month,
+          year: r.year,
+          rentAmount: r.rentAmount,
+          rentPaidAmount: r.paidAmount,
+          rentStatus: r.status,
+          rentPaidOn: r.paidOn ? new Date(r.paidOn).toLocaleDateString() : 'N/A',
+          waterReading: 0,
+          waterUnits: 0,
+          waterCost: 0,
+          waterPaid: 'N/A',
+          waterPaidOn: 'N/A'
+        })
+      }
+
+      // Merge water records
+      for (const w of waterRecords) {
+        const existing = flatMap.get(w.flatId)
+        if (existing) {
+          existing.waterReading = w.reading
+          existing.waterUnits = w.unitsConsumed
+          existing.waterCost = w.totalCost
+          existing.waterPaid = w.isPaid ? 'YES' : 'NO'
+          existing.waterPaidOn = w.paidOn ? new Date(w.paidOn).toLocaleDateString() : 'N/A'
+        } else {
+          // Fetch active tenant for the flat if not found in rent records
+          const activeTenant = await prisma.tenant.findFirst({
+            where: { flatId: w.flatId, status: 'ACTIVE' },
+            select: { name: true, phone: true }
+          })
+          flatMap.set(w.flatId, {
+            flatId: w.flatId,
+            flatNumber: w.flat.flatNumber,
+            propertyName: w.flat.property.name,
+            tenantName: activeTenant?.name || 'N/A',
+            tenantPhone: activeTenant?.phone || 'N/A',
+            month: w.month,
+            year: w.year,
+            rentAmount: 0,
+            rentPaidAmount: 0,
+            rentStatus: 'N/A',
+            rentPaidOn: 'N/A',
+            waterReading: w.reading,
+            waterUnits: w.unitsConsumed,
+            waterCost: w.totalCost,
+            waterPaid: w.isPaid ? 'YES' : 'NO',
+            waterPaidOn: w.paidOn ? new Date(w.paidOn).toLocaleDateString() : 'N/A'
+          })
+        }
+      }
+
+      const data = Array.from(flatMap.values()).map(item => ({
+        'Flat No.': item.flatNumber,
+        'Building Name': item.propertyName,
+        'Tenant Name': item.tenantName,
+        'Tenant Phone': item.tenantPhone,
+        'Billing Period': `${item.month}/${item.year}`,
+        'Rent Due (₹)': item.rentAmount,
+        'Rent Collected (₹)': item.rentPaidAmount,
+        'Rent Balance (₹)': item.rentAmount - item.rentPaidAmount,
+        'Rent Status': item.rentStatus,
+        'Rent Paid On': item.rentPaidOn,
+        'Water Reading': item.waterReading,
+        'Water Consumed (L)': item.waterUnits,
+        'Water Cost (₹)': item.waterCost,
+        'Water Paid': item.waterPaid,
+        'Water Paid On': item.waterPaidOn,
+        'Total Collected (₹)': item.rentPaidAmount + (item.waterPaid === 'YES' ? item.waterCost : 0)
+      }))
+
+      return NextResponse.json(data)
+    }
+
     return NextResponse.json([])
   } catch (error) {
     console.error('Fetch report error:', error)

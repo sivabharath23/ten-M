@@ -74,4 +74,6 @@ export const rentRecordUpdateSchema = z.object({
   paidOn: z.string().optional().nullable(),
   paymentMode: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
+  payWaterBill: z.boolean().optional(),
+  waterPaidAmount: z.number().optional().nullable(),
 })

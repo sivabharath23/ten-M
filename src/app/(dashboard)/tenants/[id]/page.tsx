@@ -665,7 +665,9 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
             <div className="space-y-4 text-xs font-semibold text-slate-600">
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-slate-400 shrink-0" />
-                <span>{tenant.phone}</span>
+                <a href={`tel:${tenant.phone}`} className="text-brand-600 hover:underline">
+                  {tenant.phone}
+                </a>
               </div>
               {tenant.email && (
                 <div className="flex items-center gap-3">

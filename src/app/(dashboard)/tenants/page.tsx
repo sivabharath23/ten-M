@@ -502,7 +502,9 @@ export default function TenantsPage() {
                 <div className="space-y-2 border-t border-b border-slate-100 py-3 text-xs text-slate-500 font-semibold">
                   <div className="flex items-center gap-2">
                     <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                    <span>{tenant.phone}</span>
+                    <a href={`tel:${tenant.phone}`} className="text-brand-600 hover:underline">
+                      {tenant.phone}
+                    </a>
                   </div>
                   {tenant.email && (
                     <div className="flex items-center gap-2">
