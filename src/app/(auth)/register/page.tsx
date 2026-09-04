@@ -182,18 +182,21 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Security Footer Note */}
-        <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-          <ShieldCheck className="h-4 w-4 text-emerald-400" />
-          <span>Secure Password Hashing & Cookie Sessions</span>
+        {/* Security Footer Note & Left Section Footer */}
+        <div className="space-y-4 pt-6 border-t border-slate-900 relative z-10">
+          <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+            <ShieldCheck className="h-4 w-4 text-emerald-400" />
+            <span>Secure Password Hashing & Cookie Sessions</span>
+          </div>
+          <Footer variant="dark" className="!pt-2 !border-t-0" />
         </div>
       </div>
 
       {/* Right Column: Auth Form Card Container */}
-      <div className="flex-1 flex items-center justify-center p-6 md:p-12 relative">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 relative overflow-y-auto min-h-screen lg:min-h-0">
 
         {/* Main Form Card */}
-        <div className="w-full max-w-lg bg-white border border-slate-200/80 shadow-[0_25px_50px_-12px_rgba(15,23,42,0.08)] rounded-[32px] p-8 md:p-10 space-y-7 relative z-10 transition-all duration-300">
+        <div className="w-full max-w-lg bg-white border border-slate-200/80 shadow-[0_25px_50px_-12px_rgba(15,23,42,0.08)] rounded-[32px] p-8 md:p-10 space-y-7 relative z-10 transition-all duration-300 my-auto">
 
           {/* Accent colored line at the top */}
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brand-600 via-indigo-600 to-cyan-500 rounded-t-[32px]" />
@@ -341,7 +344,7 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <Footer className="w-full max-w-xl mt-6 z-10" />
+        <Footer className="w-full max-w-lg mt-6 z-10 lg:hidden" />
       </div>
     </div>
   )
