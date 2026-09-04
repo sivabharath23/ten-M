@@ -3,7 +3,7 @@ import { jwtVerify } from 'jose'
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'your-super-secret-key-at-least-32-characters-long-tenm-portal')
 
-const PUBLIC_PATHS = ['/login', '/register', '/api/auth']
+const PUBLIC_PATHS = ['/login', '/register', '/api/auth', '/api-docs', '/docs', '/openapi.json']
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl

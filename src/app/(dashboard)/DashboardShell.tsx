@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Topbar } from '@/components/layout/Topbar'
 import { MobileNav } from '@/components/layout/MobileNav'
+import { Footer } from '@/components/layout/Footer'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { toast } from 'sonner'
 import {
@@ -113,10 +114,11 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
         />
 
         {/* Scrollable Content Pane */}
-        <main className="flex-1 overflow-y-auto p-3 md:p-4 pb-20 md:pb-6">
-          <div className="max-w-0xl mx-auto space-y-6 animate-page-transition-enter">
+        <main className="flex-1 overflow-y-auto p-3 md:p-4 pb-20 md:pb-4 flex flex-col justify-between">
+          <div className="max-w-0xl mx-auto space-y-6 animate-page-transition-enter w-full flex-1">
             {children}
           </div>
+          <Footer className="mt-8" />
         </main>
 
         {/* Mobile Nav Bar */}
@@ -140,6 +142,7 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
             {/* Header */}
             <div className="flex items-center justify-between px-6 pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
+
                 <div className="h-8 w-8 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center font-bold text-brand-700 text-xs shrink-0">
                   {user?.name.charAt(0).toUpperCase()}
                 </div>

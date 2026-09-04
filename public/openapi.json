@@ -1,0 +1,335 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "TenM Landlord Portal API",
+    "version": "1.0.0",
+    "description": "API documentation for the TenM Landlord Management Portal, covering properties, flats, tenant onboarding, rent collection, water billing, and reports."
+  },
+  "servers": [
+    {
+      "url": "/api",
+      "description": "Base API Path"
+    }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register a new landlord account",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 8 },
+                  "userType": { "type": "string", "enum": ["SINGLE", "MULTIPLE"], "default": "SINGLE" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Landlord successfully registered" },
+          "400": { "description": "Invalid input values" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Authenticate landlord session",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Successfully authenticated" },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Log out and clear session cookie",
+        "responses": {
+          "200": { "description": "Successfully logged out" }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Get authenticated landlord details",
+        "responses": {
+          "200": { "description": "Returns landlord details" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/properties": {
+      "get": {
+        "tags": ["Properties"],
+        "summary": "Retrieve user properties",
+        "responses": {
+          "200": { "description": "List of active properties" }
+        }
+      },
+      "post": {
+        "tags": ["Properties"],
+        "summary": "Register a new building property",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "address", "city"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "address": { "type": "string" },
+                  "city": { "type": "string" },
+                  "type": { "type": "string", "enum": ["RESIDENTIAL", "COMMERCIAL"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Property created successfully" },
+          "400": { "description": "Validation error" }
+        }
+      }
+    },
+    "/flats": {
+      "get": {
+        "tags": ["Flats"],
+        "summary": "Retrieve flats for a property",
+        "parameters": [
+          {
+            "name": "propertyId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "List of flats under the property" }
+        }
+      },
+      "post": {
+        "tags": ["Flats"],
+        "summary": "Register a flat unit in a property",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["propertyId", "flatNumber", "baseRent"],
+                "properties": {
+                  "propertyId": { "type": "string" },
+                  "flatNumber": { "type": "string" },
+                  "floor": { "type": "integer", "minimum": 0 },
+                  "bhkType": { "type": "string", "default": "1BHK" },
+                  "baseRent": { "type": "number", "minimum": 0 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Flat unit successfully registered" }
+        }
+      }
+    },
+    "/tenants": {
+      "get": {
+        "tags": ["Tenants"],
+        "summary": "List active or vacated tenants",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["ACTIVE", "VACATED"], "default": "ACTIVE" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "List of tenants" }
+        }
+      },
+      "post": {
+        "tags": ["Tenants"],
+        "summary": "Register/onboard a new tenant to a flat",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["flatId", "name", "phone", "joiningDate", "currentRent"],
+                "properties": {
+                  "flatId": { "type": "string" },
+                  "name": { "type": "string" },
+                  "phone": { "type": "string" },
+                  "email": { "type": "string" },
+                  "idProofType": { "type": "string" },
+                  "idProofNumber": { "type": "string" },
+                  "joiningDate": { "type": "string", "format": "date" },
+                  "currentRent": { "type": "number" },
+                  "advanceAmount": { "type": "number", "default": 0 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Tenant registered successfully" }
+        }
+      }
+    },
+    "/rent": {
+      "get": {
+        "tags": ["Rent Collection"],
+        "summary": "Fetch rent collection records including associated water bills",
+        "parameters": [
+          { "name": "month", "in": "query", "required": true, "schema": { "type": "integer" } },
+          { "name": "year", "in": "query", "required": true, "schema": { "type": "integer" } },
+          { "name": "propertyId", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "List of rent records" }
+        }
+      },
+      "post": {
+        "tags": ["Rent Collection"],
+        "summary": "Bulk generate rent billing records for a month/year",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["month", "year"],
+                "properties": {
+                  "month": { "type": "integer", "minimum": 1, "maximum": 12 },
+                  "year": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Summary of generated records" }
+        }
+      }
+    },
+    "/rent/{id}": {
+      "put": {
+        "tags": ["Rent Collection"],
+        "summary": "Update payment status and optionally collect water bill",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["status", "paidAmount"],
+                "properties": {
+                  "status": { "type": "string", "enum": ["PENDING", "PAID", "PARTIAL", "OVERDUE"] },
+                  "paidAmount": { "type": "number" },
+                  "paidOn": { "type": "string", "format": "date-time", "nullable": true },
+                  "paymentMode": { "type": "string", "nullable": true },
+                  "notes": { "type": "string", "nullable": true },
+                  "payWaterBill": { "type": "boolean", "description": "Collect the corresponding water bill at the same time" },
+                  "waterPaidAmount": { "type": "number", "description": "Override/flat-rate water collection amount if no record existed" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Rent record updated successfully" }
+        }
+      }
+    },
+    "/water": {
+      "get": {
+        "tags": ["Water Meter & Billing"],
+        "summary": "Fetch water records",
+        "parameters": [
+          { "name": "month", "in": "query", "required": true, "schema": { "type": "integer" } },
+          { "name": "year", "in": "query", "required": true, "schema": { "type": "integer" } },
+          { "name": "propertyId", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "List of water meter records" }
+        }
+      },
+      "post": {
+        "tags": ["Water Meter & Billing"],
+        "summary": "Record water meter reading (upsert)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["flatId", "month", "year", "reading"],
+                "properties": {
+                  "flatId": { "type": "string" },
+                  "month": { "type": "integer" },
+                  "year": { "type": "integer" },
+                  "reading": { "type": "number", "description": "New water meter reading" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Water billing record successfully saved" }
+        }
+      }
+    },
+    "/reports": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Generate specialized reports (Rent, Water, Occupancy, Revisions, Combined)",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "enum": ["rent", "water", "overdue", "occupancy", "revision", "combined"] }
+          },
+          { "name": "month", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "year", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "propertyId", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Formated tabular report structure" }
+        }
+      }
+    }
+  }
+}
