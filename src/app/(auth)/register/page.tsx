@@ -8,6 +8,7 @@ import { registerSchema } from '@/lib/validations'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { toast } from 'sonner'
+import { Footer } from '@/components/layout/Footer'
 import Link from 'next/link'
 import { Building2, Receipt, Droplet, TrendingUp, Sparkles, ArrowRight, User, Mail, Lock, Eye, EyeOff, Building, Layers, Check, ShieldCheck } from 'lucide-react'
 
@@ -339,6 +340,8 @@ export default function RegisterPage() {
             </Link>
           </div>
         </div>
+
+        <Footer className="w-full max-w-xl mt-6 z-10" />
       </div>
     </div>
   )

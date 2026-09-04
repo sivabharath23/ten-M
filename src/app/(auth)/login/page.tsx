@@ -8,6 +8,7 @@ import { loginSchema } from '@/lib/validations'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { toast } from 'sonner'
+import { Footer } from '@/components/layout/Footer'
 import Link from 'next/link'
 import { Building2, Receipt, Droplet, TrendingUp, Sparkles, ArrowRight, Mail, Lock, Eye, EyeOff, ShieldCheck } from 'lucide-react'
 
@@ -275,6 +276,8 @@ export default function LoginPage() {
             </Link>
           </div>
         </div>
+
+        <Footer className="w-full max-w-md mt-6 z-10" />
       </div>
     </div>
   )
